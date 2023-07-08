@@ -1,24 +1,21 @@
-from rest_framework.viewsets import ModelViewSet
-from recipes.models import Recipe
+# Third Party Library
+from recipes.models import Recipe, Tag
 from recipes.serializers import RecipeSerializer, RecipeTagSerializer
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 
 
 class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
-    http_method_names = ["GET", "POST", "PATCH", "DELETE"]
+    http_method_names = ["get", "post", "patch", "delete"]
+    serializer_class = RecipeSerializer
 
     def create(self, request, *args, **kwargs):
-        recipe_data = {}
-        for key, value in request.data.items():
-            if key in RecipeSerializer.Meta.fields:
-                recipe_data[key] = value
-        recipe_serializer = RecipeSerializer(data=recipe_data)
-        recipe_serializer.is_valid(raise_exception=True)
-        recipe = recipe_serializer.save()
-        
-        
+        request.data["author"] = request.user.id
 
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        request.data["author"] = request.user.id
+        return super().update(request, *args, **kwargs)

@@ -4,7 +4,7 @@ astroid==2.15.5
 asttokens==2.2.1
 autopep8==2.0.2
 backcall==0.2.0
-backports.zoneinfo==0.2.1
+backports.zoneinfo;python_version<"3.9"
 black==23.3.0
 blessed==1.20.0
 certifi==2023.5.7
@@ -48,7 +48,6 @@ pathspec==0.11.1
 pickleshare==0.7.5
 Pillow==9.5.0
 platformdirs==3.8.0
-pluggy==1.2.0
 prompt-toolkit==3.0.39
 psycopg2-binary==2.9.6
 pure-eval==0.2.2
@@ -60,7 +59,7 @@ PyJWT==2.7.0
 pylint==2.17.4
 pylint-django==2.5.3
 pylint-plugin-utils==0.8.2
-pytest==7.4.0
+pytest==5.4.0
 pytest-django==4.5.2
 pytest-pythonpath==0.7.4
 python-dotenv==1.0.0

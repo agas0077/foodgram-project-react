@@ -27,6 +27,10 @@ class Recipe(models.Model):
             MinValueValidator(1),
         ],
     )
+    tags = models.ManyToManyField(
+        "Tag",
+        related_name="recipe_list",
+    )
 
     def __str__(self) -> str:
         return self.name
@@ -57,12 +61,13 @@ class Tag(models.Model):
 
 
 class RecipeTag(models.Model):
-    tag = models.ForeignKey(
-        Tag, on_delete=models.CASCADE, related_name="recipe_tag_tag"
-    )
-    recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name="recipe_tag_recipe"
-    )
+    pass
+    # tag = models.ForeignKey(
+    #     Tag, on_delete=models.CASCADE, related_name="recipe_tag_tag"
+    # )
+    # recipe = models.ForeignKey(
+    #     Recipe, on_delete=models.CASCADE, related_name="recipe_tag_recipe"
+    # )
 
-    def __str__(self) -> str:
-        return " - ".join([self.recipe.name, self.tag.name])
+    # def __str__(self) -> str:
+    #     return " - ".join([self.recipe.name, self.tag.name])

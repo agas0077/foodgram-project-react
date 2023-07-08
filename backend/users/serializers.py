@@ -4,24 +4,14 @@ from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers
 from rest_framework.authtoken.serializers import AuthTokenSerializer
+from users.models import SubscriberSubscribee
 
 User = get_user_model()
 
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        # TODO: добавить is_subscribed
-        fields = (
-            "email",
-            "id",
-            "username",
-            "first_name",
-            "last_name",
-        )
-
-
 class CustomUserCreateSerializer(UserCreateSerializer):
+    """Custom djoser serializer to add necessary fields to response."""
+
     class Meta(UserCreateSerializer.Meta):
         fields = (
             "email",
@@ -40,6 +30,7 @@ class CustomAuthTokenSerializer(AuthTokenSerializer):
     username = None
 
     def validate(self, attrs):
+        """Search for user by given email and return username instead."""
         email = attrs.get("email")
         password = attrs.get("password")
 
@@ -52,4 +43,65 @@ class CustomAuthTokenSerializer(AuthTokenSerializer):
             username = user.get_username()
             attrs["username"] = username
 
+        return super().validate(attrs)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """General user serializer."""
+
+    is_subscribed = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = (
+            "email",
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "is_subscribed",
+        )
+
+    def get_is_subscribed(self, obj):
+        return obj.user_subscribee.filter(
+            subscriber_id=self.context["request"].user.id
+        ).exists()
+
+
+class MySubscriptionSerializer(UserSerializer):
+    """
+    Serializer for subscriptions.
+    Add recepes list and recipes_count
+    """
+
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
+
+    class Meta(UserSerializer.Meta):
+        fields = UserSerializer.Meta.fields + ("recipes", "recipes_count")
+
+    def get_recipes(self, obj):
+        try:
+            recipes_limit = int(
+                self.context["request"].query_params["recipes_limit"]
+            )
+            recipes = ["recepe"] * recipes_limit
+        except KeyError:
+            recipes = ["recepe"]
+        return recipes
+
+    def get_recipes_count(self, obj):
+        return 0
+
+
+class UnSubScribeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubscriberSubscribee
+        fields = "__all__"
+
+    def validate(self, attrs):
+        if attrs["subscriber"] == attrs["subscribee"]:
+            raise serializers.ValidationError(
+                "You cannot subscriber to yourself!"
+            )
         return super().validate(attrs)

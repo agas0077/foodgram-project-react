@@ -2,7 +2,15 @@
 from http import HTTPStatus
 
 # Third Party Library
-from users.tests.tests_base import UserTestsBaseClass
+from django.contrib.auth import get_user_model
+from rest_framework.authtoken.models import Token
+from users.tests.tests_base import (
+    SubscriptionTestsBaseClass,
+    UserTestsBaseClass,
+)
+from django.urls import reverse_lazy
+
+User = get_user_model()
 
 
 class UserURLTests(UserTestsBaseClass):
@@ -95,3 +103,76 @@ class UserURLTests(UserTestsBaseClass):
             self.LOGOUT_URL, headers=self.auth_headers
         )
         self.assertEqual(response.status_code, HTTPStatus.NO_CONTENT)
+
+
+class SubscriptionURLTests(SubscriptionTestsBaseClass):
+    def test_anon(self):
+        urls = [
+            self.UN_SUB_SCRIBE_URL,
+            self.MY_SUBSCRIPIONS_URL,
+            self.UN_SUB_SCRIBE_URL_INVALID_URL,
+        ]
+        for url in urls:
+            with self.subTest(url=url):
+                response = self.guest_client.get(url)
+                self.assertEqual(response.status_code, HTTPStatus.UNAUTHORIZED)
+
+    def test_my_subscriptions(self):
+        response = self.authorized_client.get(
+            self.MY_SUBSCRIPIONS_URL, headers=self.auth_headers
+        )
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_subscribe_ok(self):
+        response = self.authorized_client.post(
+            self.UN_SUB_SCRIBE_URL, headers=self.auth_headers
+        )
+        self.assertEqual(response.status_code, HTTPStatus.CREATED)
+
+    def test_unsubscribe_ok(self):
+        self.authorized_client.post(
+            self.UN_SUB_SCRIBE_URL, headers=self.auth_headers
+        )
+        response = self.authorized_client.delete(
+            self.UN_SUB_SCRIBE_URL, headers=self.auth_headers
+        )
+        self.assertEqual(response.status_code, HTTPStatus.NO_CONTENT)
+
+    def test_un_subscribe_error(self):
+        for method, url in self.UN_SUBSCRIBE_URLS.items():
+            with self.subTest(url=url):
+                if method == "post":
+                    self.authorized_client.post(url, headers=self.auth_headers)
+                    response = self.authorized_client.post(
+                        url, headers=self.auth_headers
+                    )
+                elif method == "delete":
+                    self.authorized_client.delete(
+                        url, headers=self.auth_headers
+                    )
+                    response = self.authorized_client.delete(
+                        url, headers=self.auth_headers
+                    )
+                self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
+
+    def test_un_subscribe_invalid_user(self):
+        for method, url in self.UN_SUBSCRIBE_INVALID_URLS.items():
+            with self.subTest(url=url):
+                if method == "post":
+                    response = self.authorized_client.post(
+                        url, headers=self.auth_headers
+                    )
+                elif method == "delete":
+                    response = self.authorized_client.delete(
+                        url, headers=self.auth_headers
+                    )
+        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
+
+    def test_cant_subscribe_to_yourself(self):
+        user = User.objects.create(username="selfsubscriber")
+        token, _ = Token.objects.get_or_create(user=user)
+        auth_headers = {"AUTHORIZATION": f"Token {token.key}"}
+
+        url = self.UN_SUB_SCRIBE_URL.replace(str(self.SUBSCRIBE_USER_ID), str(user.id))
+        response = self.authorized_client.post(url, headers=auth_headers)
+        self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)

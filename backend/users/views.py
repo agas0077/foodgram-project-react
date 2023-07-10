@@ -1,4 +1,5 @@
 # Third Party Library
+from core.pagination import LimitPageNumberPaginaion
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
@@ -10,7 +11,6 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from users.models import SubscriberSubscribee
-from users.pagination import LimitPageNumberPaginaion
 from users.serializers import (
     CustomAuthTokenSerializer,
     MySubscriptionSerializer,
@@ -112,7 +112,7 @@ class UnSubScribeViewSet(
                 subscriber=subscriber_id, subscribee=subscribee_id
             )
         except queryset.model.DoesNotExist:
-            raise ValidationError({'errors': "Not subscribed!"})
+            raise ValidationError({"errors": "Not subscribed!"})
         return obj
 
     def create(self, request, *args, **kwargs):

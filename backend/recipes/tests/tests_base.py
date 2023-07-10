@@ -47,8 +47,8 @@ class RecipeTestsBaseClass(TestCase):
         )
         Tag.objects.bulk_create(
             [
-                {"name": "White", "color": "#FFFFFF", "slug": "white"},
-                {"name": "Black", "color": "#000000", "slug": "black"},
+                Tag(name="White", color="#FFFFFF", slug="white"),
+                Tag(name="Black", color="#000000", slug="black"),
             ]
         )
 
@@ -62,17 +62,44 @@ class RecipeTestsBaseClass(TestCase):
 class RecipeTestsBaseClass(RecipeTestsBaseClass):
     def __init__(self, methodName: str = "runTest") -> None:
         super().__init__(methodName)
-        self.RECIPES_ALL = reverse_lazy("recipes:recipes:recipe-list")
-        self.RECIPES_DETAIL = reverse_lazy("recipes:recipes:recipe-detail")
+        self.RECIPES_ALL = reverse_lazy("recipes:recipe-list")
+        self.RECIPES_DETAIL = reverse_lazy("recipes:recipe-detail")
         self.RECIPES_DETAIL_ID = reverse_lazy(
-            "recipes:recipes:recipe-detail",
+            "recipes:recipe-detail",
             args=[
                 1,
             ],
         )
         self.RECIPES_DETAIL_ID_INVALID = reverse_lazy(
-            "recipes:recipes:recipe-detail",
+            "recipes:recipe-detail",
             args=[
                 100,
             ],
         )
+        self.data = {
+            # "ingredients": [{"id": 1123, "amount": 10}],
+            "tags": [1, 2],
+            "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
+            "name": "string",
+            "text": "string",
+            "cooking_time": 1,
+        }
+        self.RECIPE_FIELDS = list(self.data.keys()) + [
+            "author",
+            "is_favorited",
+            "is_in_shopping_cart",
+            "id",
+        ]
+
+    def _create_recipe_and_get_url(self):
+        response = self.client.post(
+            self.RECIPES_ALL, data=self.data, headers=self.auth_headers
+        )
+        id = response.data.get("id")
+        url = reverse_lazy(
+            "recipes:recipe-detail",
+            args=[
+                id,
+            ],
+        )
+        return url

@@ -103,3 +103,22 @@ class RecipeTestsBaseClass(RecipeTestsBaseClass):
             ],
         )
         return url
+
+
+class TagTestsBaseClass(RecipeTestsBaseClass):
+    def __init__(self, methodName: str = "runTest") -> None:
+        super().__init__(methodName)
+        self.ALL_TAGS_URL = reverse_lazy("recipes:tag-list")
+        self.TAG_ID_URL = reverse_lazy(
+            "recipes:tag-detail",
+            args=[
+                1,
+            ],
+        )
+        self.TAG_ID_URL_INVALID = reverse_lazy(
+            "recipes:tag-detail",
+            args=[
+                100,
+            ],
+        )
+        self.TAGS_FIELDS = ["name", "color", "slug"]

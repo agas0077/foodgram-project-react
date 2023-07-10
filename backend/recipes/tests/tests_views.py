@@ -1,12 +1,12 @@
-# Standard Library
-from http import HTTPStatus
-
 # Third Party Library
 from django.contrib.auth import get_user_model
 from django.urls import reverse_lazy
 from recipes.models import Recipe
-from recipes.tests.tests_base import RecipeTestsBaseClass, TagTestsBaseClass
-from rest_framework.authtoken.models import Token
+from recipes.tests.tests_base import (
+    LikeTestsBaseClass,
+    RecipeTestsBaseClass,
+    TagTestsBaseClass,
+)
 
 User = get_user_model()
 
@@ -32,7 +32,7 @@ class RecipeViewsTests(RecipeTestsBaseClass):
                 self.assertIn(field, response.data)
 
     def test_recipe_id_get(self):
-        url = self._create_recipe_and_get_url()
+        id, url = self._create_recipe_and_get_url()
         response = self.client.get(url, headers=self.auth_headers)
 
         for field in self.RECIPE_FIELDS:
@@ -40,7 +40,7 @@ class RecipeViewsTests(RecipeTestsBaseClass):
                 self.assertIn(field, response.data)
 
     def test_recipe_patch(self):
-        url = self._create_recipe_and_get_url()
+        id, url = self._create_recipe_and_get_url()
         response = self.client.get(url, headers=self.auth_headers)
         check_not_equal = response.data["name"]
         data = self.data.copy()
@@ -56,7 +56,7 @@ class RecipeViewsTests(RecipeTestsBaseClass):
 
     def test_recipe_delete(self):
         before = Recipe.objects.all().count()
-        url = self._create_recipe_and_get_url()
+        id, url = self._create_recipe_and_get_url()
         check_post = Recipe.objects.all().count()
         if before != check_post:
             self.client.delete(url, headers=self.auth_headers)
@@ -76,5 +76,21 @@ class TagViewsTests(TagTestsBaseClass):
     def test_tag_id_get(self):
         response = self.client.get(self.TAG_ID_URL, headers=self.auth_headers)
         for field in self.TAGS_FIELDS:
+            with self.subTest(field=field):
+                self.assertIn(field, response.data)
+
+
+class LikeViewsTests(LikeTestsBaseClass):
+    def test_like_post(self):
+        id, _ = self._create_recipe_and_get_url()
+        url = reverse_lazy(
+            "recipes:dis-like",
+            args=[
+                id,
+            ],
+        )
+        response = self.client.post(url, headers=self.auth_headers)
+
+        for field in self.LIKE_FIELDS:
             with self.subTest(field=field):
                 self.assertIn(field, response.data)

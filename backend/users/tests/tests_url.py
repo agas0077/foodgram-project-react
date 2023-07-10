@@ -127,9 +127,7 @@ class SubscriptionURLTests(SubscriptionTestsBaseClass):
         self.assertEqual(response.status_code, HTTPStatus.CREATED)
 
     def test_unsubscribe_ok(self):
-        self.authorized_client.post(
-            self.UN_SUB_SCRIBE_URL, headers=self.auth_headers
-        )
+        self.authorized_client.post(self.UN_SUB_SCRIBE_URL, headers=self.auth_headers)
         response = self.authorized_client.delete(
             self.UN_SUB_SCRIBE_URL, headers=self.auth_headers
         )
@@ -144,9 +142,7 @@ class SubscriptionURLTests(SubscriptionTestsBaseClass):
                         url, headers=self.auth_headers
                     )
                 elif method == "delete":
-                    self.authorized_client.delete(
-                        url, headers=self.auth_headers
-                    )
+                    self.authorized_client.delete(url, headers=self.auth_headers)
                     response = self.authorized_client.delete(
                         url, headers=self.auth_headers
                     )
@@ -170,8 +166,6 @@ class SubscriptionURLTests(SubscriptionTestsBaseClass):
         token, _ = Token.objects.get_or_create(user=user)
         auth_headers = {"AUTHORIZATION": f"Token {token.key}"}
 
-        url = self.UN_SUB_SCRIBE_URL.replace(
-            str(self.SUBSCRIBE_USER_ID), str(user.id)
-        )
+        url = self.UN_SUB_SCRIBE_URL.replace(str(self.SUBSCRIBE_USER_ID), str(user.id))
         response = self.authorized_client.post(url, headers=auth_headers)
         self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)

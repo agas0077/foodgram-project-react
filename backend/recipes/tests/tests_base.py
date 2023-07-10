@@ -8,13 +8,13 @@ from rest_framework.authtoken.models import Token
 User = get_user_model()
 
 
-class RecipeTestsBaseClass(TestCase):
+class TestsBaseClass(TestCase):
     FORCE_USER_NAME = "HasNoName"
     FORCE_USER_EMAIL = "force@force.ru"
     FORCE_CURRENT_PASSWORD = "Kalina3333!"
     FORCE_NEW_PASSWORD = "Kalina4444!"
 
-    NUM_USERS = 10
+    NUM = 10
 
     def __init__(self, methodName: str = "runTest") -> None:
         super().__init__(methodName)
@@ -32,7 +32,7 @@ class RecipeTestsBaseClass(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        for i in range(0, cls.NUM_USERS):
+        for i in range(0, cls.NUM):
             User.objects.create(
                 email=f"aaa{i}@aaa.ert",
                 username=f"username_{i}",
@@ -40,6 +40,7 @@ class RecipeTestsBaseClass(TestCase):
                 last_name=f"ln_{i}",
                 password="Kalina3333!",
             )
+
         User.objects.create_user(
             username=cls.FORCE_USER_NAME,
             password=cls.FORCE_CURRENT_PASSWORD,
@@ -59,7 +60,7 @@ class RecipeTestsBaseClass(TestCase):
         self.auth_headers = {"AUTHORIZATION": f"Token {self.token.key}"}
 
 
-class RecipeTestsBaseClass(RecipeTestsBaseClass):
+class RecipeTestsBaseClass(TestsBaseClass):
     def __init__(self, methodName: str = "runTest") -> None:
         super().__init__(methodName)
         self.RECIPES_ALL = reverse_lazy("recipes:recipe-list")
@@ -79,7 +80,12 @@ class RecipeTestsBaseClass(RecipeTestsBaseClass):
         self.data = {
             # "ingredients": [{"id": 1123, "amount": 10}],
             "tags": [1, 2],
-            "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
+            "image": (
+                "data:image/png;base64,"
+                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD"
+                "///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAA"
+                "AggCByxOyYQAAAABJRU5ErkJggg=="
+            ),
             "name": "string",
             "text": "string",
             "cooking_time": 1,
@@ -102,10 +108,10 @@ class RecipeTestsBaseClass(RecipeTestsBaseClass):
                 id,
             ],
         )
-        return url
+        return id, url
 
 
-class TagTestsBaseClass(RecipeTestsBaseClass):
+class TagTestsBaseClass(TestsBaseClass):
     def __init__(self, methodName: str = "runTest") -> None:
         super().__init__(methodName)
         self.ALL_TAGS_URL = reverse_lazy("recipes:tag-list")
@@ -122,3 +128,15 @@ class TagTestsBaseClass(RecipeTestsBaseClass):
             ],
         )
         self.TAGS_FIELDS = ["name", "color", "slug"]
+
+
+class LikeTestsBaseClass(RecipeTestsBaseClass):
+    def __init__(self, methodName: str = "runTest") -> None:
+        super().__init__(methodName)
+        self.LIKE_ID_URL = reverse_lazy(
+            "recipes:dis-like",
+            args=[
+                1,
+            ],
+        )
+        self.LIKE_FIELDS = ["id", "name", "image", "cooking_time"]

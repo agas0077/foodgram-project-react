@@ -1,8 +1,8 @@
 # Third Party Library
 from django.contrib.auth import get_user_model
 from users.tests.tests_url import (
-    UserTestsBaseClass,
     SubscriptionTestsBaseClass,
+    UserTestsBaseClass,
 )
 
 User = get_user_model()
@@ -112,12 +112,8 @@ class SubscriptionViewsTests(SubscriptionTestsBaseClass):
         subscripion_count_before = User.objects.get(
             pk=self.force_user.id
         ).subscriptions.count()
-        self.authorized_client.post(
-            self.UN_SUB_SCRIBE_URL, headers=self.auth_headers
-        )
+        self.authorized_client.post(self.UN_SUB_SCRIBE_URL, headers=self.auth_headers)
         subscripion_count_after = User.objects.get(
             pk=self.force_user.id
         ).subscriptions.count()
         self.assertEqual(subscripion_count_before - 1, subscripion_count_after)
-
-

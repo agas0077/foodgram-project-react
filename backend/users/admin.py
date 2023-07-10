@@ -7,12 +7,14 @@ User = get_user_model()
 
 # Register your models here.
 
+
 def custom_titled_filter(title):
     class Wrapper(admin.FieldListFilter):
         def __new__(cls, *args, **kwargs):
             instance = admin.FieldListFilter.create(*args, **kwargs)
             instance.title = title
             return instance
+
     return Wrapper
 
 
@@ -30,10 +32,10 @@ class SubscriberSubscribeeAdmin(admin.ModelAdmin):
         "subscribee",
     )
     list_filter = (
-        ('subscriber__email', custom_titled_filter('Subscriber email')),
-        ('subscriber__username', custom_titled_filter('Subscriber username')),
-        ('subscribee__email', custom_titled_filter('Subscribee email')),
-        ('subscribee__username', custom_titled_filter('Subscribee username')),
+        ("subscriber__email", custom_titled_filter("Subscriber email")),
+        ("subscriber__username", custom_titled_filter("Subscriber username")),
+        ("subscribee__email", custom_titled_filter("Subscribee email")),
+        ("subscribee__username", custom_titled_filter("Subscribee username")),
     )
 
 

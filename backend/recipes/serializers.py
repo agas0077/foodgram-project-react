@@ -5,7 +5,7 @@ import uuid
 # Third Party Library
 from django.core.files.base import ContentFile
 from django.shortcuts import get_list_or_404
-from recipes.models import Recipe, RecipeTag, Tag
+from recipes.models import Recipe, Tag
 from rest_framework import serializers
 from rest_framework.serializers import ValidationError
 
@@ -16,9 +16,7 @@ class Base64ImageField(serializers.ImageField):
             format, imgstr = data.split(";base64,")
             filename = str(uuid.uuid4())
             ext = format.split("/")[-1]
-            data = ContentFile(
-                base64.b64decode(imgstr), name=".".join([filename, ext])
-            )
+            data = ContentFile(base64.b64decode(imgstr), name=".".join([filename, ext]))
 
         return super().to_internal_value(data)
 
@@ -61,6 +59,9 @@ class RecipeSerializer(serializers.ModelSerializer):
         )
 
     def get_is_favorited(self, obj):
+        user = self.context["request"].user
+        if user in obj.user_likes.all():
+            return True
         return False
 
     def get_is_in_shopping_cart(self, obj):
@@ -97,7 +98,12 @@ class RecipeSerializer(serializers.ModelSerializer):
         return tags
 
 
-class RecipeTagSerializer(serializers.ModelSerializer):
+class LikeSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = "__all__"
-        model = RecipeTag
+        model = Recipe
+        fields = (
+            "id",
+            "name",
+            "image",
+            "cooking_time",
+        )

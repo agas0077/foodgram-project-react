@@ -4,8 +4,11 @@ from http import HTTPStatus
 # Third Party Library
 from django.contrib.auth import get_user_model
 from django.urls import reverse_lazy
-from recipes.models import Recipe
-from recipes.tests.tests_base import RecipeTestsBaseClass, TagTestsBaseClass
+from recipes.tests.tests_base import (
+    LikeTestsBaseClass,
+    RecipeTestsBaseClass,
+    TagTestsBaseClass,
+)
 from rest_framework.authtoken.models import Token
 
 User = get_user_model()
@@ -35,14 +38,14 @@ class RecipeURLTests(RecipeTestsBaseClass):
         self.assertEqual(response.status_code, HTTPStatus.UNAUTHORIZED)
 
     def test_recipe_get(self):
-        url = self._create_recipe_and_get_url()
+        id, url = self._create_recipe_and_get_url()
         response = self.client.get(url, headers=self.auth_headers)
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_recipe_patch(self):
         data = self.data.copy()
         data["name"] = "new name"
-        url = self._create_recipe_and_get_url()
+        id, url = self._create_recipe_and_get_url()
         response = self.client.patch(
             url,
             data=data,
@@ -55,7 +58,7 @@ class RecipeURLTests(RecipeTestsBaseClass):
         new_user = User.objects.create_user(username="new_user")
         token, _ = Token.objects.get_or_create(user=new_user)
         auth_headers = {"AUTHORIZATION": f"Token {token.key}"}
-        url = self._create_recipe_and_get_url()
+        id, url = self._create_recipe_and_get_url()
         response = self.client.patch(
             url,
             data=self.data,
@@ -90,7 +93,7 @@ class RecipeURLTests(RecipeTestsBaseClass):
         new_user = User.objects.create_user(username="new_user")
         token, _ = Token.objects.get_or_create(user=new_user)
         auth_headers = {"AUTHORIZATION": f"Token {token.key}"}
-        url = self._create_recipe_and_get_url()
+        id, url = self._create_recipe_and_get_url()
         response = self.client.delete(url, headers=auth_headers)
         self.assertEqual(response.status_code, HTTPStatus.FORBIDDEN)
 
@@ -101,7 +104,7 @@ class RecipeURLTests(RecipeTestsBaseClass):
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
 
     def test_recipe_delete(self):
-        url = self._create_recipe_and_get_url()
+        id, url = self._create_recipe_and_get_url()
         response = self.client.delete(url, headers=self.auth_headers)
         self.assertEqual(response.status_code, HTTPStatus.NO_CONTENT)
 
@@ -130,3 +133,76 @@ class TagURLTests(TagTestsBaseClass):
             self.TAG_ID_URL_INVALID, headers=self.auth_headers
         )
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
+
+
+class LikeURLTests(LikeTestsBaseClass):
+    def test_like_post(self):
+        id, _ = self._create_recipe_and_get_url()
+        url = reverse_lazy(
+            "recipes:dis-like",
+            args=[
+                id,
+            ],
+        )
+        response = self.client.post(url, headers=self.auth_headers)
+        self.assertEqual(response.status_code, HTTPStatus.CREATED)
+
+    def test_like_post_exists(self):
+        id, _ = self._create_recipe_and_get_url()
+        url = reverse_lazy(
+            "recipes:dis-like",
+            args=[
+                id,
+            ],
+        )
+
+        self.client.post(url, headers=self.auth_headers)
+        response = self.client.post(url, headers=self.auth_headers)
+        self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
+
+    def test_like_post_anon(self):
+        id, _ = self._create_recipe_and_get_url()
+        url = reverse_lazy(
+            "recipes:dis-like",
+            args=[
+                id,
+            ],
+        )
+
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, HTTPStatus.UNAUTHORIZED)
+
+    def test_like_delete(self):
+        id, _ = self._create_recipe_and_get_url()
+        url = reverse_lazy(
+            "recipes:dis-like",
+            args=[
+                id,
+            ],
+        )
+        self.client.post(url, headers=self.auth_headers)
+        response = self.client.delete(url, headers=self.auth_headers)
+        self.assertEqual(response.status_code, HTTPStatus.NO_CONTENT)
+
+    def test_like_delete_exists(self):
+        id, _ = self._create_recipe_and_get_url()
+        url = reverse_lazy(
+            "recipes:dis-like",
+            args=[
+                id,
+            ],
+        )
+
+        response = self.client.delete(url, headers=self.auth_headers)
+        self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
+
+    def test_like_delete_anon(self):
+        id, _ = self._create_recipe_and_get_url()
+        url = reverse_lazy(
+            "recipes:dis-like",
+            args=[
+                id,
+            ],
+        )
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, HTTPStatus.UNAUTHORIZED)

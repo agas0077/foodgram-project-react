@@ -82,9 +82,7 @@ class MySubscriptionSerializer(UserSerializer):
 
     def get_recipes(self, obj):
         try:
-            recipes_limit = int(
-                self.context["request"].query_params["recipes_limit"]
-            )
+            recipes_limit = int(self.context["request"].query_params["recipes_limit"])
             recipes = ["recepe"] * recipes_limit
         except KeyError:
             recipes = ["recepe"]
@@ -101,7 +99,5 @@ class UnSubScribeSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if attrs["subscriber"] == attrs["subscribee"]:
-            raise serializers.ValidationError(
-                "You cannot subscriber to yourself!"
-            )
+            raise serializers.ValidationError("You cannot subscriber to yourself!")
         return super().validate(attrs)

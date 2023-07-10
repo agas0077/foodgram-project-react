@@ -97,15 +97,12 @@ class UserTestsBaseClass(TestsBaseClass):
         )
 
 
-
 class SubscriptionTestsBaseClass(TestsBaseClass):
     def __init__(self, methodName: str = "runTest") -> None:
         super().__init__(methodName)
         self.SUBSCRIBE_USER_ID = 2
         self.SUBSCRIBE__INVALID_USER_ID = 200
-        self.MY_SUBSCRIPIONS_URL = reverse_lazy(
-            "users:my-subscriptions"
-        )
+        self.MY_SUBSCRIPIONS_URL = reverse_lazy("users:my-subscriptions")
         self.UN_SUB_SCRIBE_URL = reverse_lazy(
             "users:un-sub-scribe",
             args=[

@@ -29,7 +29,11 @@ class Recipe(models.Model):
     )
     tags = models.ManyToManyField(
         "Tag",
+        verbose_name="Tag",
         related_name="recipe_list",
+    )
+    user_likes = models.ManyToManyField(
+        User, verbose_name="Like", related_name="recipe_like_list"
     )
 
     def __str__(self) -> str:
@@ -58,16 +62,3 @@ class Tag(models.Model):
 
     def __str__(self) -> str:
         return self.name
-
-
-class RecipeTag(models.Model):
-    pass
-    # tag = models.ForeignKey(
-    #     Tag, on_delete=models.CASCADE, related_name="recipe_tag_tag"
-    # )
-    # recipe = models.ForeignKey(
-    #     Recipe, on_delete=models.CASCADE, related_name="recipe_tag_recipe"
-    # )
-
-    # def __str__(self) -> str:
-    #     return " - ".join([self.recipe.name, self.tag.name])

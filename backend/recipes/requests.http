@@ -1,12 +1,11 @@
 
-POST http://localhost:8000/api/recipes/
+PATCH http://localhost:8000/api/recipes/73/
 Content-Type: application/json
 Authorization: Token 2d3f9bd105f540e6d134c0d400cc4ddf4db79cd0
 
 {
   "tags": [
-    1,
-    100
+    1
   ],
   "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
   "name": "string",

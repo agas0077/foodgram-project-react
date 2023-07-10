@@ -3,20 +3,17 @@ from http import HTTPStatus
 
 # Third Party Library
 from django.contrib.auth import get_user_model
+from django.urls import reverse_lazy
 from rest_framework.authtoken.models import Token
 from users.tests.tests_base import (
     SubscriptionTestsBaseClass,
     UserTestsBaseClass,
 )
-from django.urls import reverse_lazy
 
 User = get_user_model()
 
 
 class UserURLTests(UserTestsBaseClass):
-    def __init__(self, methodName="runTest"):
-        super().__init__(methodName)
-
     def test_all_users_url(self):
         response = self.authorized_client.get(
             self.ALL_USER_URL, headers=self.auth_headers
@@ -173,6 +170,8 @@ class SubscriptionURLTests(SubscriptionTestsBaseClass):
         token, _ = Token.objects.get_or_create(user=user)
         auth_headers = {"AUTHORIZATION": f"Token {token.key}"}
 
-        url = self.UN_SUB_SCRIBE_URL.replace(str(self.SUBSCRIBE_USER_ID), str(user.id))
+        url = self.UN_SUB_SCRIBE_URL.replace(
+            str(self.SUBSCRIBE_USER_ID), str(user.id)
+        )
         response = self.authorized_client.post(url, headers=auth_headers)
         self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)

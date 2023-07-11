@@ -31,9 +31,16 @@ class Recipe(models.Model):
         "Tag",
         verbose_name="Tag",
         related_name="recipe_list",
+        blank=True,
     )
     user_likes = models.ManyToManyField(
-        User, verbose_name="Like", related_name="recipe_like_list"
+        User,
+        verbose_name="Like",
+        related_name="recipe_like_list",
+        blank=True,
+    )
+    publishing_date = models.DateTimeField(
+        verbose_name="publishing_date", auto_now_add=True
     )
 
     def __str__(self) -> str:

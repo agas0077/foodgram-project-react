@@ -81,12 +81,17 @@ class MySubscriptionSerializer(UserSerializer):
         fields = UserSerializer.Meta.fields + ("recipes", "recipes_count")
 
     def get_recipes(self, obj):
-        try:
-            recipes_limit = int(self.context["request"].query_params["recipes_limit"])
-            recipes = ["recepe"] * recipes_limit
-        except KeyError:
-            recipes = ["recepe"]
-        return recipes
+        # Third Party Library
+        from recipes.serializers import MiniRecipeSerializer
+
+        serializer = MiniRecipeSerializer(instance=obj.recipe.all(), many=True)
+
+        # try:
+        #     recipes_limit = int(self.context["request"].query_params["recipes_limit"])
+        #     recipes = ["recepe"] * recipes_limit
+        # except KeyError:
+        #     recipes = ["recepe"]
+        return serializer.data
 
     def get_recipes_count(self, obj):
         return 0
@@ -99,5 +104,7 @@ class UnSubScribeSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if attrs["subscriber"] == attrs["subscribee"]:
-            raise serializers.ValidationError("You cannot subscriber to yourself!")
+            raise serializers.ValidationError(
+                "You cannot subscriber to yourself!"
+            )
         return super().validate(attrs)

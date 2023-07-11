@@ -2,21 +2,40 @@
 from core.pagination import LimitPageNumberPaginaion
 from recipes.models import Recipe, Tag
 from recipes.permissions import IsRecipeAuthor
-from recipes.serializers import LikeSerializer, RecipeSerializer, TagSerializer
+from recipes.serializers import (
+    MiniRecipeSerializer,
+    RecipeSerializer,
+    TagSerializer,
+)
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
 
 class RecipeViewSet(ModelViewSet):
-    queryset = Recipe.objects.all()
     http_method_names = ["get", "post", "patch", "delete"]
     serializer_class = RecipeSerializer
     permission_classes = [IsRecipeAuthor, IsAuthenticated]
     pagination_class = LimitPageNumberPaginaion
+
+    def get_queryset(self):
+        filters = {}
+        if self.request.query_params.get("is_favorited"):
+            filters["user_likes"] = self.request.user
+
+        tags = self.request.query_params.getlist("tags")
+        if tags:
+            filters["tags__slug__in"] = tags
+
+        queryset = (
+            Recipe.objects.filter(**filters)
+            .order_by("-publishing_date")
+            .distinct()
+        )
+        return queryset
 
     def create(self, request, *args, **kwargs):
         request.POST._mutable = True
@@ -35,6 +54,12 @@ class TagViewSet(ModelViewSet):
     http_method_names = [
         "get",
     ]
+    permission_classes = [
+        AllowAny,
+    ]
+
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class DisLikeViewSet(CreateModelMixin, DestroyModelMixin, GenericViewSet):
@@ -49,7 +74,7 @@ class DisLikeViewSet(CreateModelMixin, DestroyModelMixin, GenericViewSet):
 
         recipe.user_likes.add(request.user)
 
-        serializer = LikeSerializer(recipe)
+        serializer = MiniRecipeSerializer(recipe)
         headers = self.get_success_headers(serializer.data)
 
         return Response(

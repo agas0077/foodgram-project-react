@@ -8,6 +8,7 @@ from django.shortcuts import get_list_or_404
 from recipes.models import Recipe, Tag
 from rest_framework import serializers
 from rest_framework.serializers import ValidationError
+from users.serializers import UserSerializer
 
 
 class Base64ImageField(serializers.ImageField):
@@ -16,7 +17,9 @@ class Base64ImageField(serializers.ImageField):
             format, imgstr = data.split(";base64,")
             filename = str(uuid.uuid4())
             ext = format.split("/")[-1]
-            data = ContentFile(base64.b64decode(imgstr), name=".".join([filename, ext]))
+            data = ContentFile(
+                base64.b64decode(imgstr), name=".".join([filename, ext])
+            )
 
         return super().to_internal_value(data)
 
@@ -38,6 +41,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     is_in_shopping_cart = serializers.SerializerMethodField()
     image = Base64ImageField()
     tags = TagSerializer(many=True, read_only=True)
+    author = UserSerializer()
 
     class Meta:
         model = Recipe
@@ -98,7 +102,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         return tags
 
 
-class LikeSerializer(serializers.ModelSerializer):
+class MiniRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = (

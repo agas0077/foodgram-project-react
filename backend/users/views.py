@@ -96,9 +96,7 @@ class ListSubscriptionsViewSet(ListAPIView):
     pagination_class = LimitPageNumberPaginaion
 
     def get_queryset(self):
-        queryset = User.objects.filter(
-            user_subscribee__subscriber=self.request.user.id
-        )
+        queryset = User.objects.filter(user_subscribee__subscriber=self.request.user.id)
         # queryset = User.objects.filter(
         #     user_subscribee=self.request.user.id
         # )
@@ -116,9 +114,7 @@ class UnSubScribeViewSet(
         subscribee_id = get_object_or_404(User, pk=self.kwargs["pk"])
         queryset = self.get_queryset()
         try:
-            obj = queryset.get(
-                subscriber=subscriber_id, subscribee=subscribee_id
-            )
+            obj = queryset.get(subscriber=subscriber_id, subscribee=subscribee_id)
         except queryset.model.DoesNotExist:
             raise ValidationError({"errors": "Not subscribed!"})
         return obj

@@ -85,16 +85,10 @@ class MySubscriptionSerializer(UserSerializer):
         from recipes.serializers import MiniRecipeSerializer
 
         serializer = MiniRecipeSerializer(instance=obj.recipe.all(), many=True)
-
-        # try:
-        #     recipes_limit = int(self.context["request"].query_params["recipes_limit"])
-        #     recipes = ["recepe"] * recipes_limit
-        # except KeyError:
-        #     recipes = ["recepe"]
         return serializer.data
 
     def get_recipes_count(self, obj):
-        return 0
+        return obj.recipe.all().count()
 
 
 class UnSubScribeSerializer(serializers.ModelSerializer):

@@ -31,9 +31,7 @@ class RecipeViewSet(ModelViewSet):
             filters["tags__slug__in"] = tags
 
         queryset = (
-            Recipe.objects.filter(**filters)
-            .order_by("-publishing_date")
-            .distinct()
+            Recipe.objects.filter(**filters).order_by("-publishing_date").distinct()
         )
         return queryset
 

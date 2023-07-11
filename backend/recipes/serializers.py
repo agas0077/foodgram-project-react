@@ -17,9 +17,7 @@ class Base64ImageField(serializers.ImageField):
             format, imgstr = data.split(";base64,")
             filename = str(uuid.uuid4())
             ext = format.split("/")[-1]
-            data = ContentFile(
-                base64.b64decode(imgstr), name=".".join([filename, ext])
-            )
+            data = ContentFile(base64.b64decode(imgstr), name=".".join([filename, ext]))
 
         return super().to_internal_value(data)
 

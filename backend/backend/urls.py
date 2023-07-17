@@ -24,4 +24,5 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("users.urls", namespace="users")),
     path("api/", include("recipes.urls", namespace="recipes")),
+    path("api/", include("ingredientlist.urls", namespace="ingredientlist")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

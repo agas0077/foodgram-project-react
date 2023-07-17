@@ -8,11 +8,10 @@ User = get_user_model()
 
 # Create your models here.
 class Recipe(models.Model):
-    # ingredients = models.ForeignKey()
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="recipe",
+        related_name="recipes",
         verbose_name="Author",
     )
     name = models.CharField(verbose_name="Recipe name", max_length=200)
@@ -42,9 +41,15 @@ class Recipe(models.Model):
     publishing_date = models.DateTimeField(
         verbose_name="publishing_date", auto_now_add=True
     )
+    shopping_cart = models.ManyToManyField(
+        User,
+        related_name="shopping_cart",
+        verbose_name="shopping_cart",
+        blank=True,
+    )
 
     def __str__(self) -> str:
-        return self.name
+        return "-".join([self.name, str(self.pk)])
 
 
 class Tag(models.Model):

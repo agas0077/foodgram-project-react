@@ -25,7 +25,7 @@ class RecipeViewsTests(RecipeTestsBaseClass):
 
     def test_recipe_create(self):
         response = self.client.post(
-            self.RECIPES_ALL, data=self.data, headers=self.auth_headers
+            self.RECIPES_ALL, data=self.RECIPE_DATA, headers=self.auth_headers
         )
         for field in self.RECIPE_FIELDS:
             with self.subTest(field=field):
@@ -43,7 +43,7 @@ class RecipeViewsTests(RecipeTestsBaseClass):
         id, url = self._create_recipe_and_get_url()
         response = self.client.get(url, headers=self.auth_headers)
         check_not_equal = response.data["name"]
-        data = self.data.copy()
+        data = self.RECIPE_DATA.copy()
         data["name"] = "blah"
         response = self.client.patch(
             url,
@@ -66,7 +66,9 @@ class RecipeViewsTests(RecipeTestsBaseClass):
 
 class TagViewsTests(TagTestsBaseClass):
     def test_tags_get(self):
-        response = self.client.get(self.ALL_TAGS_URL, headers=self.auth_headers)
+        response = self.client.get(
+            self.ALL_TAGS_URL, headers=self.auth_headers
+        )
         for field in self.TAGS_FIELDS:
             with self.subTest(field=field):
                 self.assertIn(field, response.data[0])

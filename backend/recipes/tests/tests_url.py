@@ -21,12 +21,12 @@ class RecipeURLTests(RecipeTestsBaseClass):
 
     def test_recipes_post(self):
         response = self.client.post(
-            self.RECIPES_ALL, data=self.data, headers=self.auth_headers
+            self.RECIPES_ALL, data=self.RECIPE_DATA, headers=self.auth_headers
         )
         self.assertEqual(response.status_code, HTTPStatus.CREATED)
 
     def test_recipes_post_error_data(self):
-        data = self.data.copy()
+        data = self.RECIPE_DATA.copy()
         del data["name"]
         response = self.client.post(
             self.RECIPES_ALL, data=data, headers=self.auth_headers
@@ -34,7 +34,7 @@ class RecipeURLTests(RecipeTestsBaseClass):
         self.assertEqual(response.status_code, HTTPStatus.BAD_REQUEST)
 
     def test_recipes_post_anon(self):
-        response = self.client.post(self.RECIPES_ALL, data=self.data)
+        response = self.client.post(self.RECIPES_ALL, data=self.RECIPE_DATA)
         self.assertEqual(response.status_code, HTTPStatus.UNAUTHORIZED)
 
     def test_recipe_get(self):
@@ -43,7 +43,7 @@ class RecipeURLTests(RecipeTestsBaseClass):
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_recipe_patch(self):
-        data = self.data.copy()
+        data = self.RECIPE_DATA.copy()
         data["name"] = "new name"
         id, url = self._create_recipe_and_get_url()
         response = self.client.patch(
@@ -61,7 +61,7 @@ class RecipeURLTests(RecipeTestsBaseClass):
         id, url = self._create_recipe_and_get_url()
         response = self.client.patch(
             url,
-            data=self.data,
+            data=self.RECIPE_DATA,
             headers=auth_headers,
             content_type="application/json",
         )
@@ -71,7 +71,7 @@ class RecipeURLTests(RecipeTestsBaseClass):
     def test_recipe_patch_anon(self):
         response = self.client.patch(
             self.RECIPES_DETAIL_ID,
-            data=self.data,
+            data=self.RECIPE_DATA,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, HTTPStatus.UNAUTHORIZED)
@@ -79,7 +79,7 @@ class RecipeURLTests(RecipeTestsBaseClass):
     def test_recipe_patch_id_invalid(self):
         response = self.client.patch(
             self.RECIPES_DETAIL_ID_INVALID,
-            data=self.data,
+            data=self.RECIPE_DATA,
             headers=self.auth_headers,
             content_type="application/json",
         )
@@ -111,7 +111,9 @@ class RecipeURLTests(RecipeTestsBaseClass):
 
 class TagURLTests(TagTestsBaseClass):
     def test_tags_get(self):
-        response = self.client.get(self.ALL_TAGS_URL, headers=self.auth_headers)
+        response = self.client.get(
+            self.ALL_TAGS_URL, headers=self.auth_headers
+        )
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_tag_id_get(self):
@@ -127,7 +129,9 @@ class TagURLTests(TagTestsBaseClass):
         self.assertEqual(response.status_code, HTTPStatus.UNAUTHORIZED)
 
     def test_tag_id_invalid_get(self):
-        response = self.client.get(self.TAG_ID_URL_INVALID, headers=self.auth_headers)
+        response = self.client.get(
+            self.TAG_ID_URL_INVALID, headers=self.auth_headers
+        )
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
 
 

@@ -4,16 +4,13 @@ from http import HTTPStatus
 # Third Party Library
 from django.contrib.auth import get_user_model
 from ingredientlist.tests.test_base import IngredientlistTestsBaseClass
-from rest_framework.authtoken.models import Token
 
 User = get_user_model()
 
 
 class TestURLIngredientlist(IngredientlistTestsBaseClass):
     def test_get_ingredients(self):
-        response = self.client.get(
-            self.GET_INGREDIENTS_URL, headers=self.auth_headers
-        )
+        response = self.client.get(self.GET_INGREDIENTS_URL, headers=self.auth_headers)
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_get_ingredients_anon(self):
@@ -36,9 +33,7 @@ class TestURLIngredientlist(IngredientlistTestsBaseClass):
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
 
     def test_download_order_list(self):
-        response = self.client.get(
-            self.GET_ORDER_LIST_URL, headers=self.auth_headers
-        )
+        response = self.client.get(self.GET_ORDER_LIST_URL, headers=self.auth_headers)
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_download_order_list_anon(self):

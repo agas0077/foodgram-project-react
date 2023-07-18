@@ -10,6 +10,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+from users.errors import NOT_SUBSCRIBED_ERROR
 from users.models import SubscriberSubscribee
 from users.serializers import (
     CustomAuthTokenSerializer,
@@ -97,9 +98,6 @@ class ListSubscriptionsViewSet(ListAPIView):
 
     def get_queryset(self):
         queryset = User.objects.filter(user_subscribee__subscriber=self.request.user.id)
-        # queryset = User.objects.filter(
-        #     user_subscribee=self.request.user.id
-        # )
         return queryset
 
 
@@ -116,7 +114,7 @@ class UnSubScribeViewSet(
         try:
             obj = queryset.get(subscriber=subscriber_id, subscribee=subscribee_id)
         except queryset.model.DoesNotExist:
-            raise ValidationError({"errors": "Not subscribed!"})
+            raise ValidationError({"errors": NOT_SUBSCRIBED_ERROR})
         return obj
 
     def create(self, request, *args, **kwargs):

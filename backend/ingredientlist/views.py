@@ -1,4 +1,3 @@
-# Create your views here.
 # Third Party Library
 from ingredientlist.models import Ingredient
 from ingredientlist.serializers import IngredientSerializer

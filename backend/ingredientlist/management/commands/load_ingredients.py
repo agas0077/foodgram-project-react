@@ -22,7 +22,5 @@ class Command(BaseCommand):
         with open(file_to_load, encoding="utf-8") as json_data:
             data = json.load(json_data)
 
-        Ingredient.objects.bulk_create(
-            [Ingredient(**kwargs) for kwargs in data]
-        )
+        Ingredient.objects.bulk_create([Ingredient(**kwargs) for kwargs in data])
         return "Ingredients loaded"

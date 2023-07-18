@@ -3,7 +3,7 @@ from rest_framework import permissions
 
 
 class IsRecipeAuthor(permissions.BasePermission):
-    """Класс разрешения для Recipe."""
+    """Checks whether the user is the author of the Recipe"""
 
     def has_permission(self, request, view):
         return True

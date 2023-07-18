@@ -5,6 +5,7 @@ import uuid
 # Third Party Library
 from django.core.files.base import ContentFile
 from django.shortcuts import get_list_or_404
+from recipes.errors import TAG_NOT_FOUND_ERROR
 from recipes.models import Recipe, Tag
 from rest_framework import serializers
 from rest_framework.serializers import ValidationError
@@ -35,6 +36,8 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
+    """Main recipe serializer"""
+
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
     image = Base64ImageField()
@@ -67,6 +70,9 @@ class RecipeSerializer(serializers.ModelSerializer):
         return False
 
     def get_is_in_shopping_cart(self, obj):
+        user = self.context["request"].user
+        if user in obj.in_shopping_cart.all():
+            return True
         return False
 
     def create(self, validated_data):
@@ -94,13 +100,15 @@ class RecipeSerializer(serializers.ModelSerializer):
             else:
                 invalid_tag_ids.append(tag)
         if invalid_tag_ids:
-            raise ValidationError(f"Tag id num {tag} not found!")
+            raise ValidationError(TAG_NOT_FOUND_ERROR(tag))
 
         tags = get_list_or_404(Tag, pk__in=valid_tag_ids)
         return tags
 
 
 class MiniRecipeSerializer(serializers.ModelSerializer):
+    """Mini recipe serializer. User for providing less info about recipes"""
+
     class Meta:
         model = Recipe
         fields = (

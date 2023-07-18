@@ -17,9 +17,7 @@ urlpatterns = [
     ),
     path(
         "recipes/<int:pk>/shopping_cart/",
-        views.ShoppingCartViewSet.as_view(
-            {"post": "create", "delete": "destroy"}
-        ),
+        views.ShoppingCartViewSet.as_view({"post": "create", "delete": "destroy"}),
         name="add-remove-recipe",
     ),
     path(

@@ -10,9 +10,7 @@ User = get_user_model()
 
 class UserViewsTests(UserTestsBaseClass):
     def test_all_users_view(self):
-        response = self.client.get(
-            self.ALL_USER_URL, headers=self.auth_headers
-        )
+        response = self.client.get(self.ALL_USER_URL, headers=self.auth_headers)
 
         for field in self.PAGINATION_FIELDS:
             with self.subTest(field=field):
@@ -50,9 +48,7 @@ class UserViewsTests(UserTestsBaseClass):
                 self.assertIn(field, response.data)
 
     def test_user_me_view(self):
-        response = self.client.get(
-            self.CURRENT_USER_URL, headers=self.auth_headers
-        )
+        response = self.client.get(self.CURRENT_USER_URL, headers=self.auth_headers)
 
         for field in self.USER_FIELDS:
             with self.subTest(field=field):
@@ -79,9 +75,7 @@ class UserViewsTests(UserTestsBaseClass):
 
 class SubscriptionViewsTests(SubscriptionTestsBaseClass):
     def test_my_subscriptions(self):
-        response = self.client.get(
-            self.MY_SUBSCRIPIONS_URL, headers=self.auth_headers
-        )
+        response = self.client.get(self.MY_SUBSCRIPIONS_URL, headers=self.auth_headers)
         for field in self.PAGINATION_FIELDS:
             with self.subTest(field=field):
                 self.assertIn(field, response.data)
@@ -94,9 +88,7 @@ class SubscriptionViewsTests(SubscriptionTestsBaseClass):
         subscripion_count_before = User.objects.get(
             pk=self.force_user.id
         ).subscriptions.count()
-        response = self.client.post(
-            self.UN_SUB_SCRIBE_URL, headers=self.auth_headers
-        )
+        response = self.client.post(self.UN_SUB_SCRIBE_URL, headers=self.auth_headers)
         subscripion_count_after = User.objects.get(
             pk=self.force_user.id
         ).subscriptions.count()

@@ -66,9 +66,7 @@ class RecipeViewsTests(RecipeTestsBaseClass):
 
 class TagViewsTests(TagTestsBaseClass):
     def test_tags_get(self):
-        response = self.client.get(
-            self.ALL_TAGS_URL, headers=self.auth_headers
-        )
+        response = self.client.get(self.ALL_TAGS_URL, headers=self.auth_headers)
         for field in self.TAGS_FIELDS:
             with self.subTest(field=field):
                 self.assertIn(field, response.data[0])

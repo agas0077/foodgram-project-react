@@ -1,15 +1,27 @@
 # Standard Library
-from io import BytesIO
 import os
+import uuid
 
 # Third Party Library
 from core.pagination import LimitPageNumberPaginaion
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
-from django.http import FileResponse, HttpResponse
+from django.http import FileResponse
 from django.shortcuts import get_object_or_404
-from ingredientlist.models import IngredientRecipe
+from ingredientlist.models import (
+    AMOUNT_NAME,
+    INGREDIENT_NAME_NAME,
+    MEASUREMENT_UNIT_NAME,
+    IngredientRecipe,
+)
 import pandas as pd
+from recipes.errors import (
+    ALREADY_IN_SHOPPING_CART_ERROR,
+    EMPTY_SHOPPING_CART_ERROR,
+    NO_LIKE_ERROR,
+    RECIPE_404_IN_SHOPPING_CART,
+    SECOND_LIKE_ERROR,
+)
 from recipes.models import Recipe, Tag
 from recipes.permissions import IsRecipeAuthor
 from recipes.serializers import (
@@ -29,6 +41,15 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
 
+class CustomFileResponse(FileResponse):
+    """Removes the shopping cart file after the file is sent"""
+
+    def close(self) -> None:
+        super().close()
+        file = os.path.join(settings.SHOPPING_CART_ROOT, self.filename)
+        os.remove(file)
+
+
 class RecipeViewSet(ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     serializer_class = RecipeSerializer
@@ -45,20 +66,23 @@ class RecipeViewSet(ModelViewSet):
             filters["tags__slug__in"] = tags
 
         queryset = (
-            Recipe.objects.filter(**filters)
-            .order_by("-publishing_date")
-            .distinct()
+            Recipe.objects.filter(**filters).order_by("-publishing_date").distinct()
         )
+
         return queryset
 
     def create(self, request, *args, **kwargs):
+        # If method == POST, one can't change request data
+        # (need to switch _mutable)
         request.POST._mutable = True
         request.data["author"] = request.user.id
         request.POST._mutable = False
+
         return super().create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         request.data["author"] = request.user.id
+
         return super().update(request, *args, **kwargs)
 
 
@@ -78,10 +102,10 @@ class DisLikeViewSet(CreateModelMixin, DestroyModelMixin, GenericViewSet):
 
     def create(self, request, *args, **kwargs):
         recipe_id = kwargs["pk"]
-        recipe = Recipe.objects.get(pk=recipe_id)
+        recipe = self.get_queryset().get(pk=recipe_id)
 
         if request.user in recipe.user_likes.all():
-            raise ValidationError("You can't like twice!")
+            raise ValidationError(SECOND_LIKE_ERROR)
 
         recipe.user_likes.add(request.user)
 
@@ -96,10 +120,10 @@ class DisLikeViewSet(CreateModelMixin, DestroyModelMixin, GenericViewSet):
 
     def destroy(self, request, *args, **kwargs):
         recipe_id = kwargs["pk"]
-        recipe = Recipe.objects.get(pk=recipe_id)
+        recipe = self.get_queryset().get(pk=recipe_id)
 
         if request.user not in recipe.user_likes.all():
-            raise ValidationError("You didn't like the recipe!")
+            raise ValidationError(NO_LIKE_ERROR)
 
         recipe.user_likes.remove(request.user)
 
@@ -118,31 +142,41 @@ class ShoppingCartViewSet(
     def retrieve(self, request, *args, **kwargs):
         queryset = (
             self.get_queryset()
-            .filter(recipe__shopping_cart=request.user)
-            .values(
-                "ingredient__name", "amount", "ingredient__measurement_unit"
-            )
+            .filter(recipe__in_shopping_cart=request.user)
+            .values("ingredient__name", "amount", "ingredient__measurement_unit")
         )
 
+        if not queryset.exists():
+            raise ValidationError(EMPTY_SHOPPING_CART_ERROR)
+
+        # Create dataframe with required ingredients
         df = pd.DataFrame(list(queryset))
-        columns = ["Ingredient name", "Amount", "Measurement Unit"]
+        columns = [INGREDIENT_NAME_NAME, AMOUNT_NAME, MEASUREMENT_UNIT_NAME]
         df.columns = columns
+        # Aggregating repeating ingredients
         df = df.pivot_table(
-            values="Amount",
-            index=["Ingredient name", "Measurement Unit"],
+            values=AMOUNT_NAME,
+            index=[INGREDIENT_NAME_NAME, MEASUREMENT_UNIT_NAME],
             aggfunc=sum,
         ).reset_index()
         df = df[columns]
 
-        file_name = "temp_xlsx.xlsx"
-        temp_file_save_path = os.path.join(settings.MEDIA_ROOT, file_name)
+        hash = str(uuid.uuid4())
+        file_name = f"Список ингредиентов_{hash}.xlsx"
+        temp_file_save_path = os.path.join(settings.SHOPPING_CART_ROOT, file_name)
+        if not os.path.isdir(settings.SHOPPING_CART_ROOT):
+            os.mkdir(settings.SHOPPING_CART_ROOT)
+
         df.to_excel(temp_file_save_path, index=False)
 
-        fs = FileSystemStorage(settings.MEDIA_ROOT)
-        response = FileResponse(
-            fs.open(file_name, "rb"), content_type="application/force-download"
+        fs = FileSystemStorage(settings.SHOPPING_CART_ROOT)
+        response = CustomFileResponse(
+            fs.open(file_name, "rb"),
+            content_type="application/force-download",
+            filename=file_name,
         )
         response["Content-Disposition"] = f'attachment; filename="{file_name}"'
+        # os.remove(temp_file_save_path)
         return response
 
     def create(self, request, *args, **kwargs):
@@ -161,20 +195,18 @@ class ShoppingCartViewSet(
     def _create_or_destroy(self, create_or_destroy, request, *args, **kwargs):
         recipe_id = kwargs.get("pk")
         user = request.user
-        recipe = get_object_or_404(self.queryset, pk=recipe_id)
+        recipe = get_object_or_404(self.get_queryset(), pk=recipe_id)
 
         if create_or_destroy == "create":
-            if request.user in recipe.shopping_cart.all():
-                raise ValidationError("Already in your shopping cart!")
+            if request.user in recipe.in_shopping_cart.all():
+                raise ValidationError(ALREADY_IN_SHOPPING_CART_ERROR)
 
-            recipe.shopping_cart.add(user)
+            recipe.in_shopping_cart.add(user)
 
         elif create_or_destroy == "destroy":
-            if request.user not in recipe.shopping_cart.all():
-                raise ValidationError(
-                    "You don't have the recipe in your shopping cart!"
-                )
+            if request.user not in recipe.in_shopping_cart.all():
+                raise ValidationError(RECIPE_404_IN_SHOPPING_CART)
 
-            recipe.shopping_cart.remove(user)
+            recipe.in_shopping_cart.remove(user)
 
         return recipe

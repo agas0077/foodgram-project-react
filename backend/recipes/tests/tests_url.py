@@ -111,9 +111,7 @@ class RecipeURLTests(RecipeTestsBaseClass):
 
 class TagURLTests(TagTestsBaseClass):
     def test_tags_get(self):
-        response = self.client.get(
-            self.ALL_TAGS_URL, headers=self.auth_headers
-        )
+        response = self.client.get(self.ALL_TAGS_URL, headers=self.auth_headers)
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_tag_id_get(self):
@@ -129,9 +127,7 @@ class TagURLTests(TagTestsBaseClass):
         self.assertEqual(response.status_code, HTTPStatus.UNAUTHORIZED)
 
     def test_tag_id_invalid_get(self):
-        response = self.client.get(
-            self.TAG_ID_URL_INVALID, headers=self.auth_headers
-        )
+        response = self.client.get(self.TAG_ID_URL_INVALID, headers=self.auth_headers)
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
 
 

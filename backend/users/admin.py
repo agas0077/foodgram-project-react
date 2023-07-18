@@ -27,15 +27,26 @@ class UserAdmin(admin.ModelAdmin):
 
 
 class SubscriberSubscribeeAdmin(admin.ModelAdmin):
+    SUBSCRIBER_EMAIL_NAME = "Адрес электронной почты того, кто подписывается"
+    SUBSCRIBER_USERNAME_NAME = "Ник того, кто подписывается"
+    SUBSCRIBEE_EMAIL_NAME = "Адрес электронной почты того, на кого подписываются"
+    SUBSCRIBEE_USERNAME_NAME = "Ник того, на кого подписываются"
+
     list_display = (
         "subscriber",
         "subscribee",
     )
     list_filter = (
-        ("subscriber__email", custom_titled_filter("Subscriber email")),
-        ("subscriber__username", custom_titled_filter("Subscriber username")),
-        ("subscribee__email", custom_titled_filter("Subscribee email")),
-        ("subscribee__username", custom_titled_filter("Subscribee username")),
+        ("subscriber__email", custom_titled_filter(SUBSCRIBER_EMAIL_NAME)),
+        (
+            "subscriber__username",
+            custom_titled_filter(SUBSCRIBER_USERNAME_NAME),
+        ),
+        ("subscribee__email", custom_titled_filter(SUBSCRIBEE_EMAIL_NAME)),
+        (
+            "subscribee__username",
+            custom_titled_filter(SUBSCRIBEE_USERNAME_NAME),
+        ),
     )
 
 

@@ -17,7 +17,7 @@ GET http://localhost:8000/api/ingredients/
 Authorization: Token 2d3f9bd105f540e6d134c0d400cc4ddf4db79cd0
 
 ###
-POST http://localhost:8000/api/recipes/58/shopping_cart/
+POST http://localhost:8000/api/recipes/57/shopping_cart/
 Authorization: Token 2d3f9bd105f540e6d134c0d400cc4ddf4db79cd0
 
 ###

@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers
 from rest_framework.authtoken.serializers import AuthTokenSerializer
+from users.errors import SELF_SUBSCRIPTION_ERROR
 from users.models import SubscriberSubscribee
 
 User = get_user_model()
@@ -81,6 +82,7 @@ class MySubscriptionSerializer(UserSerializer):
         fields = UserSerializer.Meta.fields + ("recipes", "recipes_count")
 
     def get_recipes(self, obj):
+        # Due to circular import
         # Third Party Library
         from recipes.serializers import MiniRecipeSerializer
 
@@ -94,11 +96,9 @@ class MySubscriptionSerializer(UserSerializer):
 class UnSubScribeSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubscriberSubscribee
-        fields = "__all__"
+        fields = ("subscriber", "subscribee")
 
     def validate(self, attrs):
         if attrs["subscriber"] == attrs["subscribee"]:
-            raise serializers.ValidationError(
-                "You cannot subscriber to yourself!"
-            )
+            raise serializers.ValidationError(SELF_SUBSCRIPTION_ERROR)
         return super().validate(attrs)

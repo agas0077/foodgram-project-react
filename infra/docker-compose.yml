@@ -4,7 +4,7 @@ volumes:
   pg_data:
   static_backend:
   static_frontend:
-  media:
+  media_backend:
 
 
 services:
@@ -32,10 +32,12 @@ services:
       - db
     volumes:
       - static_backend:/app/static/
-      # - media:/app/backend_media
+      - media_backend:/app/backend_media
     command: >
       bash -c "python manage.py migrate 
       && python manage.py collectstatic --no-input
+      && python manage.py load_ingredients
+      && python manage.py load_tags
       && gunicorn --bind 0.0.0.0:8000 backend.wsgi"
   
   nginx:
@@ -51,3 +53,4 @@ services:
       - ../docs/:/usr/share/nginx/html/api/docs/
       - static_backend:/static_backend
       - static_frontend:/static_frontend
+      - media_backend:/media_backend

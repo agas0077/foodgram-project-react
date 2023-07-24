@@ -9,7 +9,8 @@ User = get_user_model()
 class UserTestsBaseClass(TestsBaseClass):
     def __init__(self, methodName: str = "runTest") -> None:
         super().__init__(methodName)
-        self.ALL_USER_URL = reverse_lazy("users:users")  # /api/users GET POST
+        # /api/users GET POST
+        self.ALL_USER_URL = reverse_lazy("users:users")
         self.CURRENT_USER_URL = reverse_lazy("users:me")  # /api/users/me
         self.CHANGE_PASSWORD_URL = reverse_lazy(
             "users:set-password"

@@ -5,11 +5,17 @@ from ingredientlist.models import Ingredient, IngredientRecipe
 
 # Register your models here.
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "measurement_unit")
+    """Админка модели ингредиентов"""
+
+    list_display = ("name", "measurement_unit")
+    list_filter = ("name",)
 
 
 class IngredientRecipeAdmin(admin.ModelAdmin):
-    list_display = ("recipe", "amount")
+    """Админка модели связи рецептов и ингредиентов"""
+
+    list_display = ("recipe", "ingredient", "amount")
+    list_filter = ("ingredient__name",)
 
 
 admin.site.register(Ingredient, IngredientAdmin)

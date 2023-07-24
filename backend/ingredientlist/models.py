@@ -12,7 +12,7 @@ AMOUNT_NAME = "Объем/количество"
 
 
 class Ingredient(models.Model):
-    """Ingredients model"""
+    """Моедль игредиентов"""
 
     name = models.CharField(verbose_name=INGREDIENT_NAME_NAME, max_length=100)
     measurement_unit = models.CharField(
@@ -24,13 +24,13 @@ class Ingredient(models.Model):
 
 
 class IngredientRecipe(models.Model):
-    """Model to maintain recipes ingredients"""
+    """Модель для связи рецептов и ингредиентов"""
 
     recipe = models.ForeignKey(
         Recipe,
         related_name="recipe_ingredient_recipe",
         verbose_name=RECIPE_NAME_NAME,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
 
     ingredient = models.ForeignKey(

@@ -9,6 +9,8 @@ User = get_user_model()
 
 
 def custom_titled_filter(title):
+    """Создает кастомный фильтр на основе переданного поля."""
+
     class Wrapper(admin.FieldListFilter):
         def __new__(cls, *args, **kwargs):
             instance = admin.FieldListFilter.create(*args, **kwargs)
@@ -19,6 +21,8 @@ def custom_titled_filter(title):
 
 
 class UserAdmin(admin.ModelAdmin):
+    """Админка модели пользователя."""
+
     list_display = (
         "username",
         "email",
@@ -27,9 +31,13 @@ class UserAdmin(admin.ModelAdmin):
 
 
 class SubscriberSubscribeeAdmin(admin.ModelAdmin):
+    """Админка модели связи подписчиков"""
+
     SUBSCRIBER_EMAIL_NAME = "Адрес электронной почты того, кто подписывается"
     SUBSCRIBER_USERNAME_NAME = "Ник того, кто подписывается"
-    SUBSCRIBEE_EMAIL_NAME = "Адрес электронной почты того, на кого подписываются"
+    SUBSCRIBEE_EMAIL_NAME = (
+        "Адрес электронной почты того, на кого подписываются"
+    )
     SUBSCRIBEE_USERNAME_NAME = "Ник того, на кого подписываются"
 
     list_display = (

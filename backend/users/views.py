@@ -1,6 +1,7 @@
 # Third Party Library
 from core.pagination import LimitPageNumberPaginaion
 from django.contrib.auth import get_user_model
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
 from rest_framework import mixins, status
@@ -23,15 +24,18 @@ User = get_user_model()
 
 
 class EmailTokenObtainView(ObtainAuthToken):
+    """Вьюсет получения токена."""
+
     serializer_class = CustomAuthTokenSerializer
     permission_classes = [
         AllowAny,
     ]
+    http_method_names = ["get", "post"]
 
     def post(self, request, *args, **kwargs):
         """
-        Redefine response 'token' to 'auth_token'.
-        Change response status 200 to 201.
+        Заменяет в ответе поле 'token' на 'auth_token', а
+        также статус с 200 на 201.
         """
         response = super().post(request, *args, **kwargs)
         data = {}
@@ -40,6 +44,8 @@ class EmailTokenObtainView(ObtainAuthToken):
 
 
 class ListCreateUserDjoserCustomViewSet(UserViewSet):
+    """Вьюсет получения списка пользователей и создания пользователя"""
+
     http_method_names = ["post", "get"]
     permission_classes = [
         AllowAny,
@@ -47,7 +53,6 @@ class ListCreateUserDjoserCustomViewSet(UserViewSet):
     pagination_class = LimitPageNumberPaginaion
 
     def get_serializer_class(self):
-        """Add special serializer for djoser custom list method."""
         self.serializer_class = super().get_serializer_class()
 
         if self.request.method == "GET":
@@ -56,10 +61,6 @@ class ListCreateUserDjoserCustomViewSet(UserViewSet):
         return self.serializer_class
 
     def list(self, request, *args, **kwargs):
-        """
-        Add special method to list all users overriding djoser
-        filtered method.
-        """
         queryset = User.objects.all()
 
         page = self.paginate_queryset(queryset)
@@ -72,6 +73,8 @@ class ListCreateUserDjoserCustomViewSet(UserViewSet):
 
 
 class RetrieveUserByIdViewSet(RetrieveAPIView):
+    """Вьюсет получения конкретного пользователя"""
+
     serializer_class = UserSerializer
     queryset = User.objects.all()
     lookup_url_kwarg = "pk"
@@ -79,49 +82,56 @@ class RetrieveUserByIdViewSet(RetrieveAPIView):
 
 
 class RetrieveUserViewSet(RetrieveAPIView):
+    """Вьюсет получения текущего пользователя."""
+
     serializer_class = UserSerializer
     queryset = User.objects.all()
 
     def get_object(self):
-        """Search for a particular user by its pk."""
         queryset = self.filter_queryset(self.get_queryset())
         obj = get_object_or_404(queryset, pk=self.request.user.id)
-
         self.check_object_permissions(self.request, obj)
-
         return obj
 
 
 class ListSubscriptionsViewSet(ListAPIView):
+    """Вьюсет получения списка подписок."""
+
     serializer_class = MySubscriptionSerializer
     pagination_class = LimitPageNumberPaginaion
 
     def get_queryset(self):
-        queryset = User.objects.filter(user_subscribee__subscriber=self.request.user.id)
+        queryset = User.objects.filter(
+            user_subscribee__subscriber=self.request.user.id
+        )
         return queryset
 
 
 class UnSubScribeViewSet(
     mixins.CreateModelMixin, mixins.DestroyModelMixin, GenericViewSet
 ):
+    """Вьюсет для процесса оформления подписки."""
+
     queryset = SubscriberSubscribee.objects.all()
 
     def get_object(self):
-        """Get necessary subscription for delete method."""
+        """Возвращает нужную подписку для удаления."""
         subscriber_id = self.request.user.id
         subscribee_id = get_object_or_404(User, pk=self.kwargs["pk"])
         queryset = self.get_queryset()
         try:
-            obj = queryset.get(subscriber=subscriber_id, subscribee=subscribee_id)
+            obj = queryset.get(
+                subscriber=subscriber_id, subscribee=subscribee_id
+            )
         except queryset.model.DoesNotExist:
             raise ValidationError({"errors": NOT_SUBSCRIBED_ERROR})
         return obj
 
     def create(self, request, *args, **kwargs):
         """
-        Use two different serializers:
-        one to get request and create a model record (i.e. subscription)
-        and another one to return the user object.
+        Использует два разных сериализатора:
+        Один для получения запроса с создания подписки,
+        второй для возвращения созданного объекта.
         """
         subscribee = get_object_or_404(User, pk=kwargs["pk"])
         initial_data = {

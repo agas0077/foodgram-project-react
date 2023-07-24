@@ -5,6 +5,8 @@ from recipes.models import Recipe, Tag
 
 # Register your models here.
 class RecipeAdmin(admin.ModelAdmin):
+    """Админка модели рецептов."""
+
     list_display = ("author", "name", "user_likes_count")
     list_filter = ("author", "name", "tags")
 
@@ -13,6 +15,8 @@ class RecipeAdmin(admin.ModelAdmin):
 
 
 class TagAdmin(admin.ModelAdmin):
+    """Админка модели тегов."""
+
     list_display = ("name", "color", "slug")
 
 

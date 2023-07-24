@@ -21,7 +21,7 @@ TAG_SLUG_NAME = "Название-слаг тега"
 
 
 class Recipe(models.Model):
-    """Recipe model"""
+    """Модель рецепта"""
 
     author = models.ForeignKey(
         User,
@@ -68,7 +68,7 @@ class Recipe(models.Model):
 
 
 class Tag(models.Model):
-    """Tag model"""
+    """Модель тега"""
 
     name = models.CharField(verbose_name=TAG_NAME_NAME, max_length=200)
     color = models.CharField(

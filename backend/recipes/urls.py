@@ -17,12 +17,14 @@ urlpatterns = [
     ),
     path(
         "recipes/<int:pk>/shopping_cart/",
-        views.ShoppingCartViewSet.as_view({"post": "create", "delete": "destroy"}),
+        views.ShoppingCartViewSet.as_view(
+            {"post": "create", "delete": "destroy"}
+        ),
         name="add-remove-recipe",
     ),
     path(
-        "recipey/download_shopping_cart/",
-        views.ShoppingCartViewSet.as_view({"get": "retrieve"}),
+        "recipes/download_shopping_cart/",
+        views.ShoppingCartViewSet.as_view({"get": "list"}),
         name="download",
     ),
 ]

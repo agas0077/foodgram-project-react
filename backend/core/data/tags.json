@@ -1,0 +1,17 @@
+[
+    {
+        "name": "Black",
+        "color": "#000000",
+        "slug": "black"
+    },
+    {
+        "name": "Red",
+        "color": "#FF0000",
+        "slug": "red"
+    },
+    {
+        "name": "Green",
+        "color": "#00FF00",
+        "slug": "green"
+    }
+]

@@ -1,5 +1,4 @@
 # Third Party Library
-from django.urls import path
 from ingredientlist.views import IngredientViewSet
 from rest_framework.routers import SimpleRouter
 

@@ -27,7 +27,9 @@ users_urlpatterns = [
 ]
 
 auth_urlpatterns = [
-    path("auth/token/login/", views.EmailTokenObtainView.as_view(), name="login"),
+    path(
+        "auth/token/login/", views.EmailTokenObtainView.as_view(), name="login"
+    ),
     path("auth/token/logout/", TokenDestroyView.as_view(), name="logout"),
 ]
 
@@ -39,7 +41,9 @@ subscripions_urlpatterns = [
     ),
     path(
         "users/<int:pk>/subscribe/",
-        views.UnSubScribeViewSet.as_view({"post": "create", "delete": "destroy"}),
+        views.UnSubScribeViewSet.as_view(
+            {"post": "create", "delete": "destroy"}
+        ),
         name="un-sub-scribe",
     ),
 ]

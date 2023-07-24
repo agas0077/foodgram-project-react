@@ -33,6 +33,10 @@ SECRET_KEY = os.getenv("DJANGO_SECRET")
 DEBUG = True if os.getenv("DJANGO_DEBUG") == "True" else False
 
 ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS").split(",")
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost",
+]
+
 
 AUTH_USER_MODEL = "users.user"
 
@@ -49,6 +53,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "djoser",
+    "django_filters",
     "users.apps.UsersConfig",
     "recipes.apps.RecipesConfig",
     "ingredientlist.apps.IngredientlistConfig",
@@ -134,11 +139,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = "static/"
-STATIC_ROOT = "/backend_static/"
+STATIC_URL = "static/backend/"
+STATIC_ROOT = BASE_DIR / "static"
 
 MEDIA_URL = "media/"
-MEDIA_ROOT = "/backend_media/"
+MEDIA_ROOT = BASE_DIR / "backend_media"
 SHOPPING_CART_ROOT = os.path.join(MEDIA_ROOT, "shopping_cart")
 
 # Default primary key field type
@@ -149,13 +154,18 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 DJOSER = {
     "LOGIN_FIELD": "email",
-    "SERIALIZERS": {"user_create": "users.serializers.CustomUserCreateSerializer"},
+    "SERIALIZERS": {
+        "user_create": "users.serializers.CustomUserCreateSerializer"
+    },
 }
 
 
 REST_FRAMEWORK = {
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",
+    ),
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.TokenAuthentication",
     ),
+    "SEARCH_PARAM": "name",
 }

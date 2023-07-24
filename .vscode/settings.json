@@ -25,7 +25,6 @@
         "--django-settings-module=backend.settings",
         "--max-line-length=79"
     ],
-    
     "editor.codeActionsOnSave": {
         "source.organizeImports": true
     },

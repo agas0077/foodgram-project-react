@@ -4,7 +4,9 @@ from ingredientlist.tests.test_base import IngredientlistTestsBaseClass
 
 class IngredientlistViewsTests(IngredientlistTestsBaseClass):
     def test_get_ingredients(self):
-        response = self.client.get(self.GET_INGREDIENTS_URL, headers=self.auth_headers)
+        response = self.client.get(
+            self.GET_INGREDIENTS_URL, headers=self.auth_headers
+        )
         for field in self.INGREDIENT_FIELDS:
             with self.subTest(field=field):
                 self.assertIn(field, response.data[0])

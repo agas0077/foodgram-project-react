@@ -6,7 +6,9 @@ from django.urls import reverse_lazy
 class IngredientlistTestsBaseClass(TestsBaseClass):
     def __init__(self, methodName: str = "runTest") -> None:
         super().__init__(methodName)
-        self.GET_INGREDIENTS_URL = reverse_lazy("ingredientlist:ingredient-list")
+        self.GET_INGREDIENTS_URL = reverse_lazy(
+            "ingredientlist:ingredient-list"
+        )
         self.GET_INGREDIENT_URL = lambda ingredient_id: reverse_lazy(
             "ingredientlist:ingredient-detail",
             args=[

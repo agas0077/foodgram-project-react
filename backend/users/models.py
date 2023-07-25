@@ -14,9 +14,7 @@ SUBSCRIBEE_NAME = "На кого подписывается"
 class User(AbstractUser):
     """Модель пользователя, расширяющая стандартную модель."""
 
-    email = models.EmailField(
-        verbose_name=EMAIL_NAME, max_length=254, unique=True
-    )
+    email = models.EmailField(verbose_name=EMAIL_NAME, max_length=254, unique=True)
     first_name = models.CharField(verbose_name=FIRST_NAME_NAME, max_length=150)
     last_name = models.CharField(verbose_name=LAST_NAME_NAME, max_length=150)
 

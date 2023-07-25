@@ -8,9 +8,7 @@ app_name = "api"
 
 router = SimpleRouter()
 
-router.register(
-    r"ingredients", views.IngredientViewSet, basename="ingredientlist"
-)
+router.register(r"ingredients", views.IngredientViewSet, basename="ingredientlist")
 router.register(r"recipes", views.RecipeViewSet, basename="recipe")
 router.register(r"tags", views.TagViewSet)
 
@@ -29,9 +27,7 @@ recipe_urlpatterns = [
     ),
     path(
         "recipes/<int:pk>/shopping_cart/",
-        views.ShoppingCartViewSet.as_view(
-            {"post": "create", "delete": "destroy"}
-        ),
+        views.ShoppingCartViewSet.as_view({"post": "create", "delete": "destroy"}),
         name="add-remove-recipe",
     ),
 ]
@@ -58,9 +54,7 @@ recipe_urlpatterns = [
 # ]
 
 auth_urlpatterns = [
-    path(
-        "auth/token/login/", views.EmailTokenObtainView.as_view(), name="login"
-    ),
+    path("auth/token/login/", views.EmailTokenObtainView.as_view(), name="login"),
     path("auth/token/logout/", TokenDestroyView.as_view(), name="logout"),
 ]
 

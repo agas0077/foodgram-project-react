@@ -1,6 +1,7 @@
 # Third Party Library
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models.constraints import UniqueConstraint
 
 EMAIL_NAME = "Адрес электронной почты"
 FIRST_NAME_NAME = "Имя"
@@ -40,10 +41,11 @@ class SubscriberSubscribee(models.Model):
     )
 
     class Meta:
-        unique_together = (
-            "subscriber",
-            "subscribee",
-        )
+        constraints = [
+            UniqueConstraint(
+                fields=["subscriber", "subscribee"], name="unique_subscription"
+            )
+        ]
 
     def __str__(self) -> str:
         return " - ".join([self.subscriber.username, self.subscribee.username])

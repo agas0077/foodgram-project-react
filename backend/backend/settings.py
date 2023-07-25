@@ -54,9 +54,9 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "djoser",
     "django_filters",
+    "api.apps.ApiConfig",
     "users.apps.UsersConfig",
     "recipes.apps.RecipesConfig",
-    "ingredientlist.apps.IngredientlistConfig",
 ]
 
 MIDDLEWARE = [
@@ -155,7 +155,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 DJOSER = {
     "LOGIN_FIELD": "email",
     "SERIALIZERS": {
-        "user_create": "users.serializers.CustomUserCreateSerializer"
+        "user_create": "api.serializers.CustomUserCreateSerializer",
+        "current_user": "api.serializers.CustomUserSerializer",
     },
 }
 

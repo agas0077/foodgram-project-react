@@ -2,40 +2,75 @@
 import io
 
 # Third Party Library
-from core.pagination import LimitPageNumberPaginaion
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
-from ingredientlist.models import (
-    AMOUNT_NAME,
-    INGREDIENT_NAME_NAME,
-    MEASUREMENT_UNIT_NAME,
-    IngredientRecipe,
-)
-import pandas as pd
-from recipes.errors import (
+from api.errors import (
     ALREADY_IN_SHOPPING_CART_ERROR,
     EMPTY_SHOPPING_CART_ERROR,
     NO_LIKE_ERROR,
+    NOT_SUBSCRIBED_ERROR,
     RECIPE_404_IN_SHOPPING_CART_ERROR,
     SECOND_LIKE_ERROR,
 )
-from recipes.models import Recipe, Tag
-from recipes.permissions import RecipePermission
-from recipes.serializers import (
+from api.pagination import LimitPageNumberPaginaion
+from api.permissions import RecipePermission
+from api.serializers import (
+    CustomAuthTokenSerializer,
+    CustomUserSerializer,
+    IngredientSerializer,
     MiniRecipeSerializer,
+    MySubscriptionSerializer,
     RecipeSerializer,
     TagSerializer,
+    UnSubScribeSerializer,
+)
+from django.contrib.auth import get_user_model
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from djoser.views import UserViewSet
+import pandas as pd
+from recipes.models import (
+    AMOUNT_NAME,
+    INGREDIENT_NAME_NAME,
+    MEASUREMENT_UNIT_NAME,
+    Ingredient,
+    IngredientRecipe,
+    Recipe,
+    Tag,
 )
 from rest_framework import status
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
+from rest_framework.filters import SearchFilter
 from rest_framework.mixins import (
     CreateModelMixin,
     DestroyModelMixin,
     ListModelMixin,
 )
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
+from users.models import SubscriberSubscribee
+
+User = get_user_model()
+
+
+class IngredientViewSet(ModelViewSet):
+    """Вьюсет для работы с ингредиентами."""
+
+    queryset = Ingredient.objects.all()
+    serializer_class = IngredientSerializer
+    http_method_names = [
+        "get",
+    ]
+    permission_classes = [
+        AllowAny,
+    ]
+    filter_backends = [
+        SearchFilter,
+    ]
+    search_fields = [
+        "^name",
+    ]
 
 
 class RecipeViewSet(ModelViewSet):
@@ -222,3 +257,88 @@ class ShoppingCartViewSet(
             recipe.in_shopping_cart.remove(user)
 
         return recipe
+
+
+class EmailTokenObtainView(ObtainAuthToken):
+    """Вьюсет получения токена."""
+
+    serializer_class = CustomAuthTokenSerializer
+    permission_classes = [
+        AllowAny,
+    ]
+    http_method_names = ["get", "post"]
+
+    def post(self, request, *args, **kwargs):
+        """
+        Заменяет в ответе поле 'token' на 'auth_token', а
+        также статус с 200 на 201.
+        """
+        response = super().post(request, *args, **kwargs)
+        data = {}
+        data["auth_token"] = response.data.pop("token")
+        return Response(data, status=status.HTTP_201_CREATED)
+
+
+class CustomUserViewSet(UserViewSet):
+    serializer_class = CustomUserSerializer
+    pagination_class = LimitPageNumberPaginaion
+    lookup_url_kwarg = "pk"
+    lookup_field = "pk"
+    permission_classes = [
+        AllowAny,
+    ]
+
+    @action(
+        detail=False, methods=["get"], permission_classes=[IsAuthenticated]
+    )
+    def subscriptions(self, request):
+        queryset = User.objects.filter(
+            user_subscribee__subscriber=request.user.id
+        )
+        serializer = MySubscriptionSerializer(instance=queryset, many=True)
+        return Response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=["post", "delete"],
+        permission_classes=[IsAuthenticated],
+    )
+    def subscribe(self, request, pk=None):
+        """
+        Использует два разных сериализатора:
+        Один для получения запроса с создания подписки,
+        второй для возвращения созданного объекта.
+        """
+        subscriber = request.user
+        subscriber_id = subscriber.id
+        subscribee = get_object_or_404(User, pk=self.kwargs["pk"])
+        subscribee_id = subscribee.id
+
+        queryset = SubscriberSubscribee.objects.all()
+
+        pair = {
+            "subscriber": subscriber_id,
+            "subscribee": subscribee_id,
+        }
+
+        if request.method.lower() == "delete":
+            try:
+                queryset.get(**pair).delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            except queryset.model.DoesNotExist:
+                raise ValidationError({"errors": NOT_SUBSCRIBED_ERROR})
+
+        serializer = UnSubScribeSerializer(data=pair)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            headers = self.get_success_headers(serializer.data)
+
+            return_serializer = MySubscriptionSerializer(
+                subscribee, context={"request": request}
+            )
+
+            return Response(
+                return_serializer.data,
+                status=status.HTTP_201_CREATED,
+                headers=headers,
+            )

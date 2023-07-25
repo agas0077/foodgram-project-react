@@ -1,11 +1,10 @@
 # Third Party Library
 from django.contrib import admin
 from django.contrib.auth import get_user_model
+from recipes.models import Ingredient, IngredientRecipe, Recipe, Tag
 from users.models import SubscriberSubscribee
 
 User = get_user_model()
-
-# Register your models here.
 
 
 def custom_titled_filter(title):
@@ -18,6 +17,38 @@ def custom_titled_filter(title):
             return instance
 
     return Wrapper
+
+
+# Register your models here.
+class IngredientAdmin(admin.ModelAdmin):
+    """Админка модели ингредиентов"""
+
+    list_display = ("name", "measurement_unit")
+    list_filter = ("name",)
+
+
+class IngredientRecipeAdmin(admin.ModelAdmin):
+    """Админка модели связи рецептов и ингредиентов"""
+
+    list_display = ("recipe", "ingredient", "amount")
+    list_filter = ("ingredient__name",)
+
+
+# Register your models here.
+class RecipeAdmin(admin.ModelAdmin):
+    """Админка модели рецептов."""
+
+    list_display = ("author", "name", "user_likes_count")
+    list_filter = ("author", "name", "tags")
+
+    def user_likes_count(self, obj):
+        return obj.user_likes.count()
+
+
+class TagAdmin(admin.ModelAdmin):
+    """Админка модели тегов."""
+
+    list_display = ("name", "color", "slug")
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -58,5 +89,9 @@ class SubscriberSubscribeeAdmin(admin.ModelAdmin):
     )
 
 
+admin.site.register(Ingredient, IngredientAdmin)
+admin.site.register(IngredientRecipe, IngredientRecipeAdmin)
+admin.site.register(Recipe, RecipeAdmin)
+admin.site.register(Tag, TagAdmin)
 admin.site.register(User, UserAdmin)
 admin.site.register(SubscriberSubscribee, SubscriberSubscribeeAdmin)

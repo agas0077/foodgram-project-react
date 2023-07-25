@@ -104,7 +104,9 @@ class RecipeViewSet(ModelViewSet):
             filters["in_shopping_cart"] = self.request.user
 
         queryset = (
-            Recipe.objects.filter(**filters).order_by("-publishing_date").distinct()
+            Recipe.objects.filter(**filters)
+            .order_by("-publishing_date")
+            .distinct()
         )
 
         return queryset
@@ -174,7 +176,9 @@ class ShoppingCartViewSet(
 
     def list(self, request, *args, **kwargs):
         """Функция выгрузки списка покупок в формате xlsx"""
-        queryset = self.get_queryset().filter(recipe__in_shopping_cart=request.user)
+        queryset = self.get_queryset().filter(
+            recipe__in_shopping_cart=request.user
+        )
 
         # Если у пользовател, что-то добавлено в корзину, то берутся
         # только нужные элементы
@@ -213,7 +217,9 @@ class ShoppingCartViewSet(
                     "officedocument.spreadsheetml.sheet"
                 ),
             )
-            response["Content-Disposition"] = f"attachment; filename={file_name}"
+            response[
+                "Content-Disposition"
+            ] = f"attachment; filename={file_name}"
             return response
 
     def create(self, request, *args, **kwargs):
@@ -282,9 +288,13 @@ class CustomUserViewSet(UserViewSet):
         AllowAny,
     ]
 
-    @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
+    @action(
+        detail=False, methods=["get"], permission_classes=[IsAuthenticated]
+    )
     def subscriptions(self, request):
-        queryset = User.objects.filter(user_subscribee__subscriber=request.user.id)
+        queryset = User.objects.filter(
+            user_subscribee__subscriber=request.user.id
+        )
         serializer = MySubscriptionSerializer(instance=queryset, many=True)
         return Response(serializer.data)
 

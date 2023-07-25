@@ -66,7 +66,9 @@ class SubscriberSubscribeeAdmin(admin.ModelAdmin):
 
     SUBSCRIBER_EMAIL_NAME = "Адрес электронной почты того, кто подписывается"
     SUBSCRIBER_USERNAME_NAME = "Ник того, кто подписывается"
-    SUBSCRIBEE_EMAIL_NAME = "Адрес электронной почты того, на кого подписываются"
+    SUBSCRIBEE_EMAIL_NAME = (
+        "Адрес электронной почты того, на кого подписываются"
+    )
     SUBSCRIBEE_USERNAME_NAME = "Ник того, на кого подписываются"
 
     list_display = (

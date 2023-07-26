@@ -24,7 +24,7 @@ class User(AbstractUser):
         return "-".join([self.get_username(), str(self.id)])
 
 
-class SubscriberSubscribee(models.Model):
+class Subscription(models.Model):
     """Модель для поддержки связи подписчиков."""
 
     subscriber = models.ForeignKey(

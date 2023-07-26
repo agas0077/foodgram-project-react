@@ -49,7 +49,7 @@ from rest_framework.mixins import (
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
-from users.models import SubscriberSubscribee
+from users.models import Subscription
 
 User = get_user_model()
 
@@ -314,7 +314,7 @@ class CustomUserViewSet(UserViewSet):
         subscribee = get_object_or_404(User, pk=self.kwargs["pk"])
         subscribee_id = subscribee.id
 
-        queryset = SubscriberSubscribee.objects.all()
+        queryset = Subscription.objects.all()
 
         pair = {
             "subscriber": subscriber_id,

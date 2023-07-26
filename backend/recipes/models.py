@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
+from recipes.errors import COOKING_TIME_MIN_VAL_ERROR
 
 User = get_user_model()
 
@@ -40,10 +41,10 @@ class Recipe(models.Model):
         upload_to="recipe_image/",
     )
     text = models.TextField(verbose_name=TEXT_NAME)
-    cooking_time = models.IntegerField(
+    cooking_time = models.PositiveSmallIntegerField(
         verbose_name=COOKING_TIME_NAME,
         validators=[
-            MinValueValidator(1),
+            MinValueValidator(1, COOKING_TIME_MIN_VAL_ERROR),
         ],
     )
     tags = models.ManyToManyField(

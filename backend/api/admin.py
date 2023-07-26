@@ -2,7 +2,7 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from recipes.models import Ingredient, IngredientRecipe, Recipe, Tag
-from users.models import SubscriberSubscribee
+from users.models import Subscription
 
 User = get_user_model()
 
@@ -61,7 +61,7 @@ class UserAdmin(admin.ModelAdmin):
     list_filter = ("email", "username")
 
 
-class SubscriberSubscribeeAdmin(admin.ModelAdmin):
+class SubscriptionAdmin(admin.ModelAdmin):
     """Админка модели связи подписчиков"""
 
     SUBSCRIBER_EMAIL_NAME = "Адрес электронной почты того, кто подписывается"
@@ -94,4 +94,4 @@ admin.site.register(IngredientRecipe, IngredientRecipeAdmin)
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(User, UserAdmin)
-admin.site.register(SubscriberSubscribee, SubscriberSubscribeeAdmin)
+admin.site.register(Subscription, SubscriptionAdmin)

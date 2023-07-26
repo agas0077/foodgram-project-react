@@ -16,7 +16,7 @@ from recipes.models import Ingredient, IngredientRecipe, Recipe, Tag
 from rest_framework import serializers
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.exceptions import ValidationError
-from users.models import SubscriberSubscribee
+from users.models import Subscription
 
 User = get_user_model()
 
@@ -310,7 +310,7 @@ class MySubscriptionSerializer(CustomUserSerializer):
 
 class UnSubScribeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = SubscriberSubscribee
+        model = Subscription
         fields = ("subscriber", "subscribee")
 
     def validate(self, attrs):

@@ -3,14 +3,11 @@ import base64  # Модуль с функциями кодирования и д
 import uuid
 
 # Third Party Library
-from api.errors import (
-    SELF_SUBSCRIPTION_ERROR,
-    TAG_NOT_FOUND_ERROR,
-    WRONG_EMAIL_CREDENTIAL,
-)
+from api.errors import SELF_SUBSCRIPTION_ERROR, TAG_NOT_FOUND_ERROR
 from django.contrib.auth import authenticate, get_user_model
 from django.core.files.base import ContentFile
 from django.shortcuts import get_list_or_404
+from django.utils.translation import gettext_lazy as _
 from djoser.serializers import UserCreateSerializer
 from recipes.models import Ingredient, IngredientRecipe, Recipe, Tag
 from rest_framework import serializers
@@ -277,7 +274,10 @@ class CustomAuthTokenSerializer(AuthTokenSerializer):
     username = None
 
     def validate(self, attrs):
-        """Измененный метод валидации djoser, который вместо username ищет email."""
+        """
+        Измененный метод валидации djoser,
+        который вместо username ищет email.
+        """
 
         email = attrs.get("email")
         password = attrs.get("password")

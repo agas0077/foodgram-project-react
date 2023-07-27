@@ -93,9 +93,12 @@ class CustomUserSerializer(serializers.ModelSerializer):
         Возвращает bool если текущий пользователь
         подписан на пользователя obj.
         """
-        return obj.user_subscribee.filter(
-            subscriber_id=self.context["request"].user.id
-        ).exists()
+        user = self.context["request"].user
+
+        if user.is_anonymous:
+            return False
+
+        return obj.user_subscribee.filter(subscriber_id=user.id).exists()
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -133,13 +136,22 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_is_favorited(self, obj):
         """Определяет добавлен ли рецепт в избранное у конкретного юзера"""
         user = self.context["request"].user
+
+        if user.is_anonymous:
+            return False
+
         if user in obj.user_likes.all():
             return True
+
         return False
 
     def get_is_in_shopping_cart(self, obj):
         """Определяет добавлен ли рецепт в корзину у конкретного юзера"""
         user = self.context["request"].user
+
+        if user.is_anonymous:
+            return False
+
         if user in obj.in_shopping_cart.all():
             return True
         return False
@@ -266,17 +278,17 @@ class CustomAuthTokenSerializer(AuthTokenSerializer):
 
     def validate(self, attrs):
         """Ищет пользователя по email и возвращает его username."""
-        email = attrs.get("email")
-        password = attrs.get("password")
+        # email = attrs.get("email")
+        # password = attrs.get("password")
 
-        if email and password:
-            user = User.objects.filter(
-                email=email,
-            )
-            if not user.exists():
-                raise ValidationError(WRONG_EMAIL_CREDENTIAL)
-            username = user.first().get_username()
-            attrs["username"] = username
+        # if email and password:
+        #     user = User.objects.filter(
+        #         email=email,
+        #     )
+        #     if not user.exists():
+        #         raise ValidationError(WRONG_EMAIL_CREDENTIAL)
+        #     username = user.first().get_username()
+        #     attrs["username"] = username
 
         return super().validate(attrs)
 

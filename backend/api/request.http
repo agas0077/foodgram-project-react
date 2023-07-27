@@ -1,0 +1,1 @@
+GET localhost/api/recipes HTTP/1.1

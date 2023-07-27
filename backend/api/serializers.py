@@ -8,7 +8,7 @@ from api.errors import (
     TAG_NOT_FOUND_ERROR,
     WRONG_EMAIL_CREDENTIAL,
 )
-from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate, get_user_model
 from django.core.files.base import ContentFile
 from django.shortcuts import get_list_or_404
 from djoser.serializers import UserCreateSerializer
@@ -277,22 +277,30 @@ class CustomAuthTokenSerializer(AuthTokenSerializer):
     username = None
 
     def validate(self, attrs):
-        """Ищет пользователя по email и возвращает его username."""
-        # email = attrs.get("email")
-        # password = attrs.get("password")
+        """Измененный метод валидации djoser, который вместо username ищет email."""
 
-        # if email and password:
-        #     user = User.objects.filter(
-        #         email=email,
-        #     )
-        #     if not user.exists():
-        #         raise ValidationError(WRONG_EMAIL_CREDENTIAL)
-        #     username = user.first().get_username()
-        #     attrs["username"] = username
+        email = attrs.get("email")
+        password = attrs.get("password")
 
-        return super().validate(attrs)
+        if email and password:
+            user = authenticate(
+                request=self.context.get("request"),
+                email=email,
+                password=password,
+            )
+
+            if not user:
+                msg = _("Unable to log in with provided credentials.")
+                raise serializers.ValidationError(msg, code="authorization")
+        else:
+            msg = _('Must include "username" and "password".')
+            raise serializers.ValidationError(msg, code="authorization")
+
+        attrs["user"] = user
+        return attrs
 
 
+# Как иметь один сериализатор, если они работают с разными моделями?
 class MySubscriptionSerializer(CustomUserSerializer):
     """Сериализатор подписок."""
 

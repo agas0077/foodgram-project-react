@@ -1,7 +1,7 @@
 # Third Party Library
 from django.contrib import admin
 from django.contrib.auth import get_user_model
-from recipes.models import Ingredient, IngredientRecipe, Recipe, Tag
+from recipes.models import Favorite, Ingredient, IngredientRecipe, Recipe, Tag
 from users.models import Subscription
 
 User = get_user_model()
@@ -42,7 +42,7 @@ class RecipeAdmin(admin.ModelAdmin):
     list_filter = ("author", "name", "tags")
 
     def user_likes_count(self, obj):
-        return obj.user_likes.count()
+        return obj.user_recipe_recipe.count()
 
 
 class TagAdmin(admin.ModelAdmin):
@@ -89,9 +89,14 @@ class SubscriptionAdmin(admin.ModelAdmin):
     )
 
 
+class FavoriteAdmin(admin.ModelAdmin):
+    list_display = ("user", "recipe")
+
+
 admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(IngredientRecipe, IngredientRecipeAdmin)
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(User, UserAdmin)
 admin.site.register(Subscription, SubscriptionAdmin)
+admin.site.register(Favorite, FavoriteAdmin)

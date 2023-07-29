@@ -137,7 +137,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         if user.is_anonymous:
             return False
 
-        if user in obj.user_likes.all():
+        if obj.user_recipe_recipe.filter(user=user).exists():
             return True
 
         return False

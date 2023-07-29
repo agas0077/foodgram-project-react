@@ -4,6 +4,7 @@ from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
 from recipes.errors import COOKING_TIME_MIN_VAL_ERROR
+from users.models import USERNAME_NAME
 
 User = get_user_model()
 
@@ -13,7 +14,6 @@ IMAGE_NAME = "Изображение"
 TEXT_NAME = "Описание рецепта"
 COOKING_TIME_NAME = "Время приготовления"
 TAGS_NAME = "Теги"
-USER_LIKES_NAME = "В избранном"
 PUBLISHING_DATE_NAME = "Дата публикации рецепта"
 SHOPPING_CART_NAME = "В корзине"
 
@@ -51,12 +51,6 @@ class Recipe(models.Model):
         "Tag",
         verbose_name=TAGS_NAME,
         related_name="recipe_list",
-        blank=True,
-    )
-    user_likes = models.ManyToManyField(
-        User,
-        verbose_name=USER_LIKES_NAME,
-        related_name="recipe_like_list",
         blank=True,
     )
     publishing_date = models.DateTimeField(
@@ -142,3 +136,18 @@ class IngredientRecipe(models.Model):
 
     def __str__(self) -> str:
         return " - ".join([self.recipe.name, self.ingredient.name])
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(
+        User,
+        related_name="user_recipe_user",
+        on_delete=models.CASCADE,
+        verbose_name=USERNAME_NAME,
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        related_name="user_recipe_recipe",
+        on_delete=models.CASCADE,
+        verbose_name=RECIPE_NAME_NAME,
+    )

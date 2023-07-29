@@ -16,25 +16,25 @@ router.register(r"tags", views.TagViewSet)
 
 router.register("users", views.CustomUserViewSet)
 
-recipe_urlpatterns = [
-    path(
-        "recipes/download_shopping_cart/",
-        views.ShoppingCartViewSet.as_view({"get": "list"}),
-        name="download",
-    ),
-    path(
-        "recipes/<int:pk>/favorite/",
-        views.DisLikeViewSet.as_view({"post": "create", "delete": "destroy"}),
-        name="dis-like",
-    ),
-    path(
-        "recipes/<int:pk>/shopping_cart/",
-        views.ShoppingCartViewSet.as_view(
-            {"post": "create", "delete": "destroy"}
-        ),
-        name="add-remove-recipe",
-    ),
-]
+# recipe_urlpatterns = [
+# path(
+#     "recipes/download_shopping_cart/",
+#     views.ShoppingCartViewSet.as_view({"get": "list"}),
+#     name="download",
+# ),
+# path(
+#     "recipes/<int:pk>/favorite/",
+#     views.DisLikeViewSet.as_view({"post": "create", "delete": "destroy"}),
+#     name="dis-like",
+# ),
+# path(
+#     "recipes/<int:pk>/shopping_cart/",
+#     views.ShoppingCartViewSet.as_view(
+#         {"post": "create", "delete": "destroy"}
+#     ),
+#     name="add-remove-recipe",
+# ),
+# ]
 
 auth_urlpatterns = [
     path(
@@ -44,4 +44,4 @@ auth_urlpatterns = [
 ]
 
 
-urlpatterns = recipe_urlpatterns + auth_urlpatterns + router.urls
+urlpatterns = auth_urlpatterns + router.urls

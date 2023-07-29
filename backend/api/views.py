@@ -10,6 +10,7 @@ from api.errors import (
     RECIPE_404_IN_SHOPPING_CART_ERROR,
     SECOND_LIKE_ERROR,
 )
+from api.filters import RecipeFilter
 from api.pagination import LimitPageNumberPaginaion
 from api.permissions import RecipePermission
 from api.serializers import (
@@ -31,8 +32,8 @@ from recipes.models import (
     AMOUNT_NAME,
     INGREDIENT_NAME_NAME,
     MEASUREMENT_UNIT_NAME,
+    Favorite,
     Ingredient,
-    IngredientRecipe,
     Recipe,
     Tag,
 )
@@ -41,14 +42,9 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
-from rest_framework.mixins import (
-    CreateModelMixin,
-    DestroyModelMixin,
-    ListModelMixin,
-)
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet, ModelViewSet
+from rest_framework.viewsets import ModelViewSet
 from users.models import Subscription
 
 User = get_user_model()
@@ -82,64 +78,32 @@ class RecipeViewSet(ModelViewSet):
         RecipePermission,
     ]
     pagination_class = LimitPageNumberPaginaion
-
-    def get_queryset(self):
-        """
-        Создает queryset с учетом фильтрации п
-        о параметрам переданным в query string
-        """
-        filters = {}
-        if self.request.query_params.get("is_favorited"):
-            filters["user_likes"] = self.request.user
-
-        tags = self.request.query_params.getlist("tags")
-        if tags:
-            filters["tags__slug__in"] = tags
-
-        author_id = self.request.query_params.get("author")
-        if author_id:
-            filters["author__id"] = author_id
-
-        if self.request.query_params.get("is_in_shopping_cart"):
-            filters["in_shopping_cart"] = self.request.user
-
-        queryset = (
-            Recipe.objects.filter(**filters)
-            .order_by("-publishing_date")
-            .distinct()
-        )
-
-        return queryset
-
-
-class TagViewSet(ModelViewSet):
-    """Вьюсет тегов"""
-
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
-    http_method_names = [
-        "get",
-    ]
-    permission_classes = [
-        AllowAny,
-    ]
-
-
-class DisLikeViewSet(CreateModelMixin, DestroyModelMixin, GenericViewSet):
-    """Вьюсет создает и убирает лайки с постов."""
-
     queryset = Recipe.objects.all().order_by("-publishing_date")
+    filter_backends = [
+        RecipeFilter,
+    ]
 
-    def create(self, request, *args, **kwargs):
-        recipe_id = kwargs["pk"]
-        recipe = self.get_queryset().get(pk=recipe_id)
+    @action(methods=["post", "delete"], detail=True)
+    def favorite(self, request, pk):
+        user = request.user
+        recipe = self.get_queryset().get(pk=pk)
 
-        if request.user in recipe.user_likes.all():
+        if request.method.lower() == "delete":
+            like_obj = Favorite.objects.filter(user=user, recipe=recipe)
+            if not like_obj.exists():
+                raise ValidationError(NO_LIKE_ERROR)
+
+            like_obj.delete()
+
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        like_obj, is_created = Favorite.objects.get_or_create(
+            user=user, recipe=recipe
+        )
+        if not is_created:
             raise ValidationError(SECOND_LIKE_ERROR)
 
-        recipe.user_likes.add(request.user)
-
-        serializer = MiniRecipeSerializer(recipe)
+        serializer = MiniRecipeSerializer(like_obj.recipe)
         headers = self.get_success_headers(serializer.data)
 
         return Response(
@@ -148,43 +112,30 @@ class DisLikeViewSet(CreateModelMixin, DestroyModelMixin, GenericViewSet):
             headers=headers,
         )
 
-    def destroy(self, request, *args, **kwargs):
-        recipe_id = kwargs["pk"]
-        recipe = self.get_queryset().get(pk=recipe_id)
+    @action(methods=["post", "delete"], detail=True)
+    def shopping_cart(self, request, pk):
+        if request.method.lower() == "delete":
+            self._add_remove_shopping_cart("destroy", request, pk)
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
-        if request.user not in recipe.user_likes.all():
-            raise ValidationError(NO_LIKE_ERROR)
-
-        recipe.user_likes.remove(request.user)
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class ShoppingCartViewSet(
-    ListModelMixin, CreateModelMixin, DestroyModelMixin, GenericViewSet
-):
-    """
-    Вьюсет добавления или удаления рецепта из списка покупок,
-    а также получения выгрузки списка покупок.
-    """
-
-    def get_queryset(self):
-        if self.request.method.lower() == "get":
-            return IngredientRecipe.objects.all()
-        else:
-            return Recipe.objects.all().order_by("-publishing_date")
-
-    def list(self, request, *args, **kwargs):
-        """Функция выгрузки списка покупок в формате xlsx"""
-        queryset = self.get_queryset().filter(
-            recipe__in_shopping_cart=request.user
+        recipe = self._add_remove_shopping_cart("create", request, pk)
+        serializer = MiniRecipeSerializer(instance=recipe)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
+
+    @action(detail=False)
+    def download_shopping_cart(self, request):
+        queryset = self.get_queryset().filter(in_shopping_cart=request.user)
 
         # Если у пользовател, что-то добавлено в корзину, то берутся
         # только нужные элементы
         if queryset.exists():
             queryset = queryset.values(
-                "ingredient__name", "amount", "ingredient__measurement_unit"
+                "recipe_ingredient_recipe__ingredient__name",
+                "recipe_ingredient_recipe__amount",
+                "recipe_ingredient_recipe__ingredient__measurement_unit",
             )
         else:
             raise ValidationError(EMPTY_SHOPPING_CART_ERROR)
@@ -222,25 +173,11 @@ class ShoppingCartViewSet(
             ] = f"attachment; filename={file_name}"
             return response
 
-    def create(self, request, *args, **kwargs):
-        recipe = self._create_or_destroy("create", request, *args, **kwargs)
-        serializer = MiniRecipeSerializer(instance=recipe)
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
-        )
-
-    def destroy(self, request, *args, **kwargs):
-        self._create_or_destroy("destroy", request, *args, **kwargs)
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    def _create_or_destroy(self, create_or_destroy, request, *args, **kwargs):
+    def _add_remove_shopping_cart(self, create_or_destroy, request, recipe_id):
         """
         Проверяет, есть ли у текущего пользователя
         в корзине рецепт и добавляет/удаляет его.
         """
-        recipe_id = kwargs.get("pk")
         user = request.user
         recipe = get_object_or_404(self.get_queryset(), pk=recipe_id)
 
@@ -257,6 +194,19 @@ class ShoppingCartViewSet(
             recipe.in_shopping_cart.remove(user)
 
         return recipe
+
+
+class TagViewSet(ModelViewSet):
+    """Вьюсет тегов"""
+
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+    http_method_names = [
+        "get",
+    ]
+    permission_classes = [
+        AllowAny,
+    ]
 
 
 class EmailTokenObtainView(ObtainAuthToken):
@@ -303,7 +253,7 @@ class CustomUserViewSet(UserViewSet):
         methods=["post", "delete"],
         permission_classes=[IsAuthenticated],
     )
-    def subscribe(self, request, pk=None):
+    def subscribe(self, request):
         """
         Использует два разных сериализатора:
         Один для получения запроса с создания подписки,

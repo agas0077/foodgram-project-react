@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
-from recipes.errors import COOKING_TIME_MIN_VAL_ERROR
+from recipes.errors import COOKING_TIME_MIN_VAL_ERROR, SECOND_LIKE_ERROR
 from users.models import USERNAME_NAME
 
 User = get_user_model()
@@ -151,3 +151,12 @@ class Favorite(models.Model):
         on_delete=models.CASCADE,
         verbose_name=RECIPE_NAME_NAME,
     )
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                fields=["user", "recipe"],
+                name="unique_favorite",
+                violation_error_message=SECOND_LIKE_ERROR,
+            )
+        ]

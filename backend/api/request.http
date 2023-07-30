@@ -7,4 +7,53 @@ Content-Type: application/json
 }
 
 ###
-POST http://localhost/api/recipes 
+POST http://localhost/api/recipes/
+Content-Type: application/json
+Authorization: Token fc67ecd37964e7a22931db76e3f5345e64f8e5e5
+
+{
+  "ingredients": [
+    {
+      "id": 1123,
+      "amount": 10
+    }
+  ],
+  "tags": [
+    1,
+    2
+  ],
+  "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
+  "name": "string",
+  "text": "string",
+  "cooking_time": 1
+}
+
+###
+POST http://localhost/api/recipes/6/favorite/
+Content-Type: application/json
+Authorization: Token fc67ecd37964e7a22931db76e3f5345e64f8e5e5
+
+###
+DELETE http://localhost/api/recipes/6/favorite/
+Content-Type: application/json
+Authorization: Token fc67ecd37964e7a22931db76e3f5345e64f8e5e5
+
+###
+POST http://localhost/api/recipes/6/shopping_cart/
+Content-Type: application/json
+Authorization: Token fc67ecd37964e7a22931db76e3f5345e64f8e5e5
+
+###
+DELETE http://localhost/api/recipes/6/shopping_cart/
+Content-Type: application/json
+Authorization: Token fc67ecd37964e7a22931db76e3f5345e64f8e5e5
+
+###
+GET http://localhost/api/recipes/download_shopping_cart/
+Content-Type: application/json
+Authorization: Token fc67ecd37964e7a22931db76e3f5345e64f8e5e5
+
+###
+GET http://localhost/api/recipes/?limit=1
+Content-Type: application/json
+Authorization: Token fc67ecd37964e7a22931db76e3f5345e64f8e5e5

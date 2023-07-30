@@ -1,14 +1,9 @@
-# Standard Library
-import io
-
 # Third Party Library
 from api.errors import (
     ALREADY_IN_SHOPPING_CART_ERROR,
     EMPTY_SHOPPING_CART_ERROR,
-    NO_LIKE_ERROR,
     NOT_SUBSCRIBED_ERROR,
     RECIPE_404_IN_SHOPPING_CART_ERROR,
-    SECOND_LIKE_ERROR,
 )
 from api.filters import RecipeFilter
 from api.pagination import LimitPageNumberPaginaion
@@ -23,20 +18,11 @@ from api.serializers import (
     TagSerializer,
     UnSubScribeSerializer,
 )
+from api.utils import create_excel_order_list
 from django.contrib.auth import get_user_model
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
-import pandas as pd
-from recipes.models import (
-    AMOUNT_NAME,
-    INGREDIENT_NAME_NAME,
-    MEASUREMENT_UNIT_NAME,
-    Favorite,
-    Ingredient,
-    Recipe,
-    Tag,
-)
+from recipes.models import Favorite, Ingredient, Recipe, Tag
 from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import action
@@ -90,18 +76,13 @@ class RecipeViewSet(ModelViewSet):
 
         if request.method.lower() == "delete":
             like_obj = Favorite.objects.filter(user=user, recipe=recipe)
-            if not like_obj.exists():
-                raise ValidationError(NO_LIKE_ERROR)
-
-            like_obj.delete()
-
+            if like_obj.exists():
+                like_obj.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         like_obj, is_created = Favorite.objects.get_or_create(
             user=user, recipe=recipe
         )
-        if not is_created:
-            raise ValidationError(SECOND_LIKE_ERROR)
 
         serializer = MiniRecipeSerializer(like_obj.recipe)
         headers = self.get_success_headers(serializer.data)
@@ -140,38 +121,7 @@ class RecipeViewSet(ModelViewSet):
         else:
             raise ValidationError(EMPTY_SHOPPING_CART_ERROR)
 
-        # Создаем датафрейм и переименовываем столбцы
-        df = pd.DataFrame(list(queryset))
-        columns = [INGREDIENT_NAME_NAME, AMOUNT_NAME, MEASUREMENT_UNIT_NAME]
-        df.columns = columns
-
-        # Создаем сводную таблицу, чтобы сумировать объем необходимых
-        # ингредиентов
-        df = df.pivot_table(
-            values=AMOUNT_NAME,
-            index=[INGREDIENT_NAME_NAME, MEASUREMENT_UNIT_NAME],
-            aggfunc=sum,
-        ).reset_index()
-        df = df[columns]
-
-        # Отправляем файл
-        file_name = "Ingredients.xlsx"
-
-        with io.BytesIO() as b:
-            with pd.ExcelWriter(b) as writer:
-                df.to_excel(writer, index=False)
-
-            response = HttpResponse(
-                b.getvalue(),
-                content_type=(
-                    "application/vnd.openxmlformats-"
-                    "officedocument.spreadsheetml.sheet"
-                ),
-            )
-            response[
-                "Content-Disposition"
-            ] = f"attachment; filename={file_name}"
-            return response
+        return create_excel_order_list(list(queryset))
 
     def _add_remove_shopping_cart(self, create_or_destroy, request, recipe_id):
         """

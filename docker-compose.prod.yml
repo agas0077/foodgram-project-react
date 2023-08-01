@@ -18,13 +18,13 @@ services:
       - "5432:5432"
 
   frontend:
-    image: agas0077/foodgram-frontend:latest
+    image: agas0077/foodgram_frontend:latest
     volumes:
       - static_frontend:/app/result_build/
 
 
   backend:
-    image: agas0077/foodgram-backend:latest
+    image: agas0077/foodgram_backend:latest
     env_file: .env
     depends_on:
       - db
@@ -42,7 +42,7 @@ services:
     depends_on:
         - backend
         - frontend
-    image: agas0077/foodgram-gateway:latest
+    image: agas0077/foodgram_gateway:latest
     ports:
       - "8000:80"
     volumes:

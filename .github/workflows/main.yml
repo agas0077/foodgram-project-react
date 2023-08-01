@@ -94,7 +94,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
-            cd kittygram
+            cd foodgram-project-react
             sudo docker compose -f docker-compose.prod.yml pull
             sudo docker compose -f docker-compose.prod.yml down
             sudo docker compose -f docker-compose.prod.yml up -d
@@ -108,4 +108,4 @@ jobs:
         with:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
-          message: Деплой kittygram успешно выполнен!
+          message: Деплой foodgram-project-react успешно выполнен!

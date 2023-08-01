@@ -36,7 +36,7 @@ services:
       && python manage.py collectstatic --no-input
       && python manage.py load_ingredients
       && python manage.py load_tags
-      && gunicorn --bind 0.0.0.0:8000 backend.wsgi"
+      && gunicorn --bind 0.0.0.0:8001 backend.wsgi"
   
   nginx:
     depends_on:
@@ -44,7 +44,7 @@ services:
         - frontend
     image: agas0077/foodgram-gateway:latest
     ports:
-      - "80:80"
+      - "8000:80"
     volumes:
       # - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ./frontend/build:/usr/share/nginx/html/

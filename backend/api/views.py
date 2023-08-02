@@ -196,9 +196,15 @@ class CustomUserViewSet(UserViewSet):
             user_subscribee__subscriber=request.user.id
         )
         context = self.get_serializer_context()
+
+        page = self.paginate_queryset(queryset)
         serializer = MySubscriptionSerializer(
             instance=queryset, many=True, context=context
         )
+
+        if page is not None:
+            return self.get_paginated_response(serializer.data)
+
         return Response(serializer.data)
 
     @action(

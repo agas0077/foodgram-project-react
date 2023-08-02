@@ -1,7 +1,9 @@
 # Third Party Library
 from django.contrib import admin
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from recipes.models import Favorite, Ingredient, IngredientRecipe, Recipe, Tag
+from rest_framework.authtoken.models import TokenProxy
 from users.models import Subscription
 
 User = get_user_model()
@@ -92,6 +94,9 @@ class SubscriptionAdmin(admin.ModelAdmin):
 class FavoriteAdmin(admin.ModelAdmin):
     list_display = ("user", "recipe")
 
+
+admin.site.unregister(TokenProxy)
+admin.site.unregister(Group)
 
 admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(IngredientRecipe, IngredientRecipeAdmin)

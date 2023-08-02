@@ -203,7 +203,7 @@ class CustomUserViewSet(UserViewSet):
         methods=["post", "delete"],
         permission_classes=[IsAuthenticated],
     )
-    def subscribe(self, request):
+    def subscribe(self, request, pk):
         """
         Использует два разных сериализатора:
         Один для получения запроса с создания подписки,
@@ -211,7 +211,7 @@ class CustomUserViewSet(UserViewSet):
         """
         subscriber = request.user
         subscriber_id = subscriber.id
-        subscribee = get_object_or_404(User, pk=self.kwargs["pk"])
+        subscribee = get_object_or_404(User, pk=pk)
         subscribee_id = subscribee.id
 
         queryset = Subscription.objects.all()

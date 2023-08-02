@@ -95,7 +95,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         if user.is_anonymous:
             return False
 
-        return obj.user_subscribee.filter(subscriber_id=user.id).exists()
+        return obj.user_subscribee.filter(subscriber=user).exists()
 
 
 class RecipeSerializer(serializers.ModelSerializer):

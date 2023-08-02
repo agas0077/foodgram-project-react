@@ -195,7 +195,10 @@ class CustomUserViewSet(UserViewSet):
         queryset = User.objects.filter(
             user_subscribee__subscriber=request.user.id
         )
-        serializer = MySubscriptionSerializer(instance=queryset, many=True)
+        context = self.get_serializer_context()
+        serializer = MySubscriptionSerializer(
+            instance=queryset, many=True, context=context
+        )
         return Response(serializer.data)
 
     @action(

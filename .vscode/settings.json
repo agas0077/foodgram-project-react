@@ -1,37 +1,35 @@
 {
-    "python.testing.pytestArgs": [
-        "backend"
+    "isort.importStrategy": "useBundled",
+    "markdown-pdf.convertOnSave": true,
+    "markdown-pdf.convertOnSaveExclude": [
+        "^work",
+        "work.md$",
+        "^(?![Rr][Ee][Aa][Dd][Mm][Ee]).*$",
+        "work|test",
+        "[0-9][0-9][0-9][0-9]-work",
+        "work\\test" // All '\' need to be written as '\\' (Windows)
     ],
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true,
-    "python.testing.unittestArgs": [
-        "-v",
-        "-s",
-        "./backend",
-        "-p",
-        "*test*.py"
+    "markdown-pdf.type": [
+        "pdf"
     ],
-    "editor.formatOnSave": true,
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.completeFunctionParens": false,
     "python.formatting.provider": "none",
     "python.formatting.blackArgs": [
-        "--line-length=79"
+        "--line-length",
+        "79"
     ],
-    "python.linting.pylintEnabled": false,
     "python.linting.enabled": true,
-    "python.linting.lintOnSave": true,
-    "python.linting.pylintArgs": [
-        "--load-plugins",
-        "pylint_django",
-        "--django-settings-module=backend.settings",
-        "--max-line-length=79"
-    ],
-    "editor.codeActionsOnSave": {
-        "source.organizeImports": true
-    },
-    "python.linting.mypyEnabled": false,
     "python.linting.flake8Enabled": true,
     "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter"
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+        },
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.formatOnSave": true,
+        "editor.formatOnType": true,
+        "editor.insertSpaces": true,
+        "editor.tabSize": 4
     },
-    "python.languageServer": "Default"
+    "python.analysis.typeCheckingMode": "off"
 }
